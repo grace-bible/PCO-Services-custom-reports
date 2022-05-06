@@ -1,0 +1,1472 @@
+<!--
+REPORT PACKET CONFIGURATION OPTIONS & PARAMETERS
+
+	SELECT WHICH REPORTS TO PRINT
+	Input the number of each report you want included in the packet.
+	Inputting "0" will exclude that report from the printed packet.
+		{% assign print_report_director = 1 %}
+		{% assign print_report_audio = 1 %}
+		{% assign print_report_propresenter = 1 %}
+		{% assign print_report_lighting = 1 %}
+		{% assign print_report_video = 1 %}
+		{% assign print_report_usher = 0 %}
+
+	PRINT THE SECONDARY "ITEM TIMES" REPORT FOR THE PRODUCER/DIRECTOR?
+	This will include a 3rd page on the Production Director/Producer report that
+	shows all item times for each service, rather than item lengths.
+		{% assign print_item_service_times_report = false %}
+
+	SET WHICH NOTE CATEGORIES TO PRINT ON EACH REPORT
+		{% array director_notes = "Producer", "Stream" %}
+		{% array propresenter_notes = "Slides" %}
+		{% array video_notes = "Video", "Lights" %}
+		{% array lighting_notes = "Lights" %}
+		{% array audio_notes = "Audio", "Band" %}
+		{% array usher_notes = "Ushers" %}
+
+	PEOPLE CATEGORY NAMES TO PRINT
+		{% array service_leaders = "Leadership" %}
+		{% array tech_team = "Production" %}
+		{% array worship_team = "Band" %}
+
+	SET INDIVIDUAL CATEGORY NAMES OF PLAN NOTES TO PRINT (currently only used on Usher report)
+		{% array prod_plan_notes = "General", "Production", "AVL" %}
+		{% array usher_plan_notes = "Host", "Deacons", "General", "Other" %}
+-->
+
+
+<html>
+	<head>
+		<title>{{ plan.ministry.name }}:: {{ plan.dates }}</title>
+		<style>
+			* { font-family: Helvetica, Verdana, Arial; font-size: 10pt; }
+			body { padding:0; margin:0; }
+
+			table#notes { width: 100%; padding-top: 10px; padding-bottom: 6px; }
+			table#notes td { vertical-align: top; }
+
+			table#plan { width: 100%; border-top: none; border-bottom: none; padding: 0; border-collapse: collapse;}
+			table#plan thead { display: table-header-group; }
+			table#plan tr { page-break-inside: avoid; }
+			table#plan th { vertical-align: bottom; border-bottom: solid 2px black; border-top: solid 2px black; }
+			table#plan td { border-bottom: solid 1px #DDD; padding: 2px; vertical-align: top; }
+			table#plan .time { width: 70px; text-align: center; }
+			table#plan .length { width: 55px; text-align: center; font-weight: bold; }
+			table#plan .notes { text-align: left; }
+			table#plan .header { height: 20px; background-color: #D7E2EA; color: black; font-weight: bold; padding-left: 5px; }
+      table#plan .header-wrapper { page-break-after: avoid; background-color: #626262; border-bottom: solid 1px black}
+			table#plan .item { padding-top: 6px; padding-bottom: 6px; line-height: 1.4; }
+			table#plan .item_title { font-weight: bold; }
+			table#plan .song { font-style: italic; }
+			table#plan .arrangement { font-size: 9pt; }
+			table#plan .key { font-size: 9pt; }
+			table#plan .bpm { font-size: 9pt; }
+			table#plan .sequence { font-size: 9pt; }
+			table#plan .description { font-size: 8pt; white-space: pre-wrap; }
+      table#plan .item.song .description { font-size: 10pt; font-weight: bold; color: #901a1c; }
+      table#plan .odd { background-color: #eee; }
+      table#plan .item.song { background-color: rgb(255, 237, 209) }
+      table#plan .item.song span.item_title { color: #3c4c8b; }
+      table#plan .item.song span.sequence { color: #777; }
+      table#plan td.header { border-bottom: 2px solid #25334D; }
+
+      table#header { width: 100%; border: 1px #DDD; padding: 0; border-collapse: collapse; }
+      table#header td { padding: 2px; vertical-align: top; }
+
+      table#plan .item_notes { padding-top: 6px; padding-bottom: 6px; font-size: 9pt; font-weight: bold; }
+
+		/* These rules are specific to the Production Director/Producer page(s) of the printout */
+		/*	table.director .item_notes { font-weight: normal !important; }
+			table.director .arrangement { font-size: 6pt !important; }
+			table.director .key { font-size: 6pt !important; }
+			table.director .bpm { font-size: 6pt !important; }
+			table.director .sequence { font-size: 6pt !important; }
+			table.director .description { font-size: 6pt !important; white-space: pre-wrap; } */
+
+		/* These rules are specific to the FOH Audio page(s) of the printout */
+		/*	table.foh_audio * { font-size: 12pt; }
+      table.foh_audio .item_notes { font-size: 10pt !important; }
+			table.foh_audio .song .item_title { font-size: 16pt !important; }
+			table.foh_audio .key { font-size: 12pt !important; }
+			table.foh_audio .bpm { font-size: 12pt !important; } */
+
+			table#header { width: 100%; border: 1px #DDD; padding: 0; border-collapse: collapse;}
+			table#header td { padding: 2px; vertical-align: top; }
+
+			H1 { text-align: center; padding: 0; margin: 0; font-size: 28pt; }
+			H2 { text-align: center; padding: 0; margin: 0; font-size: 18pt; }
+			H3 { text-align: center; padding: 0; margin: 0; font-size: 12pt; font-style: italic; }
+			H4 { text-align: center; padding: 0; margin: 0; font-size: 10pt }
+			PRE { margin: 0; padding: 0; white-space: pre-wrap; }
+
+			.ministry_title { text-align: center; font-weight: bold; font-size: 28pt; border-bottom: dashed 1px black; }
+			.plan_dates { text-align: center; font-weight: bold; font-size: 14pt; }
+			.series_title { text-align: right; }
+
+			.rehearsal_section { padding: 10px; width: 200px; border-right: dotted 2px black; vertical-align: top; }
+			.rehearsal_heading { clear: both; border-bottom: solid 1px lightgrey; padding-top: 10px; font-weight: bold; font-size: 12pt; }
+			.rehearsal_time { padding-top: 10px; }
+
+			.times_section { padding: 10px; width: 200px; border-right: dotted 2px black; vertical-align: top; }
+			.time_heading { clear: both; border-bottom: solid 1px lightgrey; padding-top: 10px; font-weight: bold; font-size: 12pt; }
+			.time { padding-top: 10px; }
+
+			.service_segment_label {  }
+			.people_section { padding: 10px; vertical-align: top; }
+			.people_category { clear: both; border-bottom: solid 1px lightgrey; padding-top: 10px; font-weight: bold; font-size: 10pt; }
+			.position {
+				width: 170px;
+				display: inline-block;
+				vertical-align: top;
+				margin-bottom: 5px;
+				font-size: 10pt;
+
+				/* For IE 7 */
+				zoom: 1;
+				*display: inline;
+			}
+			.person { font-size: 9pt; font-weight: bold; }
+
+			.icon-question{
+				display: inline-block;
+				color: #fff;
+				text-align: center;
+				font-size: 1em;
+				background: #666;
+				border-radius: 50%;
+				width: 1em;
+				height: 1em;
+				line-height: 1em;
+				padding: .1em;
+			}
+
+			.lyrics { font-style: normal; margin-top: 10px; }
+			.chord_chart_content {
+				margin-top: 10px;
+				-moz-column-count: {{ number_of_columns }};
+				-moz-column-gap: {{ space_between_columns }};
+				-webkit-column-count: {{ number_of_columns }};
+				-webkit-column-gap: {{ space_between_columns }};
+				column-count: {{ number_of_columns }};
+				column-gap: {{ space_between_columns }};
+				column-fill: auto;
+			}
+
+			.column_break {column-break-after: always;}
+
+		</style>
+	</head>
+	<body>
+
+
+
+		{% for i in (1..print_report_director) %}
+<!-- This section creates the report for the Production Director, Producer, or Tech Lead.
+	This copy has all Production notes as well as the list of scheduled volunteers and their posisition. -->
+
+			<!-- HEADER TITLES TABLE -->
+			<table width="100%">
+				<tr>
+					<td colspan="3" class="ministry_title">{{ plan.ministry.name }}
+				</tr>
+				<tr>
+          <td class="plan_title" width="25%">{{ plan.plan_title }}</td>
+          <td class="plan_dates" width="50%">{{ plan.dates }}</td>
+					<td class="series_title" width="25%">Producer</td>
+				</tr>
+			</table>
+			<!-- END HEADER TITLES TABLE -->
+
+
+
+			<!-- PLAN TABLE -->
+			<table id="plan" class="director">
+				<thead>
+					<tr>
+						<th class="length">Length<br/>in mins</th>
+						<th style="width:30%;"></th>
+						{% for director_note in director_notes %}
+							<th class="notes">
+								{{ director_note }}
+							</th>
+						{% endfor %}
+					</tr>
+				</thead>
+
+				<tbody>
+					{% for item in plan.items %}
+						{% case item.item_type %}
+							{% when 'Header' %}
+								<tr style="page-break-after: avoid">
+									<td colspan="2" class="header">
+										{{ item.title }}
+									</td>
+									{% for director_note in director_notes %}
+										<td class="header"></td>
+									{% endfor %}
+							{% else %}
+								<tr class="item {% cycle 'odd', 'even'%}">
+									<td class="length item">{{ item.length }}</td>
+									<td class="item {% if item.song %}song{% endif %}">
+										<span class="item_title">{{ item.title }}</span>
+										{% if item.arrangement %}
+											{% if item.arrangement.music_key != "" %}
+												<span class="key">in [{{ item.arrangement.music_key }}]</span>
+											{% endif %}
+											{% if item.arrangement.bpm != "" %}
+												<span class="bpm">at {{ item.arrangement.bpm }} bpm</span>
+											{% endif %}
+										{% endif %}
+
+										<span class="credits">{% if item.song.ccli_id != nil %}(CCLI #{{item.song.ccli_id}}) {% endif %} </span>
+
+										{% if item.arrangement %}
+											<br><span class="sequence">--- {{ item.item_sequence }}</span>
+										{% endif %}
+
+										<pre class="description">{{ item.description }}</pre>
+									</td>
+
+									{% for director_note in director_notes %}
+										<td class="item item_notes" >
+											{% for note in item.notes %}
+												{% if note.category_name == director_note.name or note.category_name == director_note %}{{ note.note }}{% endif %}
+											{% endfor %}</td>
+									{% endfor %}
+						{% endcase %}
+								</tr>
+					{% endfor %}
+				</tbody>
+
+				<tfoot>
+					<tr>
+						<th class="length">{{ plan.total_length }}</th>
+						<th></th>
+						{% for note_category in director_notes %}
+							<th></th>
+						{% endfor %}
+					</tr>
+				</tfoot>
+			</table>
+			<!-- END PLAN TABLE -->
+
+
+
+		{% if print_item_service_times_report == true %}
+
+
+			<!-- FORCE PAGE BREAK -->
+			<div style="page-break-before: always;"></div>
+			<!-- END FORCE PAGE BREAK -->
+
+
+			<!-- HEADER TITLES TABLE -->
+			<table width="100%">
+				<tr>
+					<td colspan="3" class="plan_title" width="100%">{{ plan.ministry.name }} | {{ plan.series_title }} | {{ plan.plan_title }}</td>
+				</tr>
+					<td class="plan_dates" width="50%">{{ plan.dates }}</td>
+					<td class="series_title" width="50%">Producer<br>
+						<span style="font-size: 16px; font-weight: 400; font-style: italic;">Plan Item Times</span></td>
+				</tr>
+			</table>
+			<!-- END HEADER TITLES TABLE -->
+
+
+
+			<!-- PLAN TABLE - ITEM TIMES ONLY -->
+			<table id="plan" class="director">
+				<thead>
+					<tr>
+						{% for time in plan.plan_times %}
+							<th class="time">{{ time.starts_at | date: '%m/%d<br/>%I:%M%p' | downcase }}</th>
+						{% endfor %}
+							<th></th>
+					</tr>
+			  	</thead>
+
+				<tbody>
+					{% for item in plan.items %}
+						{% case item.item_type %}
+							{% when 'Header' %}
+								<tr style="page-break-after: avoid">
+									<td colspan="{{ plan.plan_times | size | add: 1 }}" class="header">
+										{{ item.title }}
+									</td>
+							{% else %}
+								<tr class="item {% cycle 'odd', 'even'%}">
+									{% for time in plan.plan_times %}
+										<td class="time item">
+											{% for item_time in item.times %}
+												{% if item_time.time_id == time.id %}
+													{{ item_time.actual_time | date: '%I:%M%p' | downcase }}
+												{% endif %}
+											{% endfor %}
+										</td>
+										{% endfor %}
+									<td class="item {% if item.song %}song{% endif %}">
+										<span class="item_title">{{ item.title }}</span>
+										<pre class="description">{{ item.description }}</pre>
+										<pre class="description">{{ item.details }}</pre>
+									</td>
+					  		{% endcase %}
+						</tr>
+					{% endfor %}
+
+			  	</tbody>
+					<tfoot>
+						<tr>
+							{% for time in plan.plan_times %}
+								<th class="time">{{ time.ends_at | date: '%I:%M%p' | downcase }}</th>
+							{% endfor %}
+							<th></th>
+							<th></th>
+						</tr>
+					</tfoot>
+			</table>
+			<!-- END PLAN TABLE - ITEM TIMES ONLY -->
+		{% endif %}
+
+
+
+			<!-- FORCE PAGE BREAK -->
+			<div style="page-break-before: always;"></div>
+			<!-- END FORCE PAGE BREAK -->
+
+
+
+			<!-- PLAN NOTES -->
+			<div class="service_segment_label">Plan Notes</div>
+			<table id="notes">
+				{% for note in plan.notes %}
+					<tr>
+						<td width="25%"><strong>{{ note.category_name }}:</strong></td>
+						<td> {{ note.note }}</td>
+					</tr>
+				{% endfor %}
+			</table>
+			<!-- END PLAN NOTES -->
+
+
+
+			<!-- TIME & PEOPLE TABLE -->
+			<table>
+				<tr>
+					<td class="times_section">
+						{% if plan.plan_times.size != 0 %}
+							<div class="time_heading"> Service Times</div>
+								{% for time in plan.plan_times %}
+									<div class="time">
+										{% if time.name != "" %}
+											{{ time.name }}<br/>
+										{% endif %}
+										{{ time.starts_at | date: '%m/%d at %I:%M%p' | downcase }}<br/>
+									</div>
+								{% endfor %}
+						{% endif %}
+
+						{% if plan.rehearsal_times.size != 0 %}
+							<div class="time_heading"> Rehearsal Times</div>
+								{% for time in plan.rehearsal_times %}
+									<div class="time">
+										{% if time.name != "" %}
+											{{ time.name }}<br/>
+										{% endif %}
+										{{ time.starts_at | date: '%m/%d at %I:%M%p' | downcase }}<br/>
+									</div>
+								{% endfor %}
+						{% endif %}
+
+						{% if plan.other_times.size != 0 %}
+							<div class="time_heading"> Other Times</div>
+								{% for time in plan.other_times %}
+									<div class="time">
+										{% if time.name != "" %}
+											{{ time.name }}<br/>
+										{% endif %}
+										{{ time.starts_at | date: '%m/%d at %I:%M%p' | downcase }}<br/>
+									</div>
+								{% endfor %}
+						 {% endif %}
+					</td>
+					<td class="people_section">
+						<div class="service_segment_label">Service Leaders</div>
+						{% for category in service_leaders %}
+							<div class="people_category">
+								{{ category }}
+							</div>
+							{% for plan_person in plan.plan_people_not_declined %}
+								{% if plan_person.category.name == category %}
+									{% if current_position != plan_person.position %}
+										{% if current_position != '' %}</div>
+										{% endif %}
+										<div class="position">
+										<div class="person">{{ plan_person.position }}</div>
+									{% endif %}
+									<div>{{ plan_person.person.name }}{% if plan_person.status == 'U' %}&nbsp;<span class="icon-question">?</span>{% endif %}</div>
+									{% assign current_position = plan_person.position %}
+								{% endif %}
+							{% endfor %}
+						</div>
+						{% endfor %}
+
+						<div class="service_segment_label">Production Tech</div>
+						{% for category in tech_team %}
+							<div class="people_category">
+								{{ category }}
+							</div>
+							{% for plan_person in plan.plan_people_not_declined %}
+								{% if plan_person.category.name == category %}
+									{% if current_position != plan_person.position %}
+										{% if current_position != '' %}</div>
+										{% endif %}
+										<div class="position">
+										<div class="person">{{ plan_person.position }}</div>
+									{% endif %}
+									<div>{{ plan_person.person.name }}{% if plan_person.status == 'U' %}&nbsp;<span class="icon-question">?</span>{% endif %}</div>
+									{% assign current_position = plan_person.position %}
+								{% endif %}
+							{% endfor %}
+						</div>
+						{% endfor %}
+
+						<div class="service_segment_label">Worship Team</div>
+						{% for category in worship_team %}
+							<div class="people_category">
+								{{ category }}
+							</div>
+							{% for plan_person in plan.plan_people_not_declined %}
+								{% if plan_person.category.name == category %}
+									{% if current_position != plan_person.position %}
+										{% if current_position != '' %}</div>
+										{% endif %}
+										<div class="position">
+										<div class="person">{{ plan_person.position }}</div>
+									{% endif %}
+									<div>{{ plan_person.person.name }}{% if plan_person.status == 'U' %}&nbsp;<span class="icon-question">?</span>{% endif %}</div>
+									{% assign current_position = plan_person.position %}
+								{% endif %}
+							{% endfor %}
+						</div>
+						{% endfor %}
+					</td>
+				</tr>
+			</table>
+			<!-- END TIME & PEOPLE TABLE -->
+
+
+			<!-- FORCE PAGE BREAK -->
+			<div style="page-break-before: always;"></div>
+			<!-- END FORCE PAGE BREAK -->
+		{% endfor %}
+
+
+
+		{% for i in (1..print_report_audio) %}
+<!-- This section creates the report for the FOH Audio Engineer.
+	This report includes lengths, titles, and song key and BPM.
+	Item notes included can be specified in the configuration section at the top of this report. -->
+
+	<!-- HEADER TITLES TABLE -->
+	<table width="100%">
+		<tr>
+			<td colspan="3" class="ministry_title">{{ plan.ministry.name }}
+		</tr>
+		<tr>
+			<td class="plan_title" width="25%">{{ plan.plan_title }}</td>
+			<td class="plan_dates" width="50%">{{ plan.dates }}</td>
+			<td class="series_title" width="25%">FOH Audio</td>
+		</tr>
+	</table>
+	<!-- END HEADER TITLES TABLE -->
+
+
+
+			<!-- PLAN TABLE -->
+			<table id="plan" class="foh_audio">
+				<thead>
+					<tr>
+						<th class="length">Item<br/>Length</th>
+						<th></th>
+						{% for audio_note in audio_notes %}
+							<th class="notes">
+								{{ audio_note }}
+							</th>
+						{% endfor %}
+					</tr>
+				</thead>
+
+				<tbody>
+					{% for item in plan.items %}
+						{% case item.item_type %}
+							{% when 'Header' %}
+								<tr style="page-break-after: avoid">
+									<td colspan="2" class="header">
+										{{ item.title }}
+									</td>
+									{% for audio_note in audio_notes %}
+										<td class="header"></td>
+									{% endfor %}
+							{% else %}
+								<tr class="item {% cycle 'odd', 'even'%}">
+									<td class="length item">{{ item.length }}</td>
+									<td class="item {% if item.song %}song{% endif %}">
+										<span class="item_title">{{ item.title }}</span>
+										{% if item.arrangement %}
+											{% if item.arrangement.music_key != "" %}
+												<span class="key">in [{{ item.arrangement.music_key }}]</span>
+											{% endif %}
+											{% if item.arrangement.bpm != "" %}
+												<span class="bpm">at {{ item.arrangement.bpm }} bpm</span>
+											{% endif %}
+										{% endif %}
+										<pre class="description">{{ item.description }}</pre>
+									</td>
+
+									{% for audio_note in audio_notes %}
+										<td class="item item_notes">
+											{% for note in item.notes %}
+												{% if note.category_name == audio_note.name or note.category_name == audio_note %}{{ note.note }}{% endif %}
+											{% endfor %}</td>
+									{% endfor %}
+						{% endcase %}
+								</tr>
+					{% endfor %}
+				</tbody>
+
+				<tfoot>
+					<tr>
+						<th class="length">{{ plan.total_length }}</th>
+						<th></th>
+						{% for note_category in audio_notes %}
+							<th></th>
+						{% endfor %}
+					</tr>
+				</tfoot>
+			</table>
+			<!-- END PLAN TABLE -->
+
+
+
+			<!-- FORCE PAGE BREAK -->
+			<div style="page-break-before: always;"></div>
+			<!-- END FORCE PAGE BREAK -->
+
+
+
+			<!-- PLAN NOTES -->
+			<div class="service_segment_label">Plan Notes</div>
+			<table id="notes">
+				{% for prod_plan_note in prod_plan_notes %}
+					{% for note in plan.notes %}
+						{% if prod_plan_note == note.category_name %}
+							<tr>
+								<td width="25%"><strong>{{ note.category_name }}:</strong></td>
+								<td> {{ note.note }}</td>
+							</tr>
+						{% endif %}
+					{% endfor %}
+				{% endfor %}
+			</table>
+			<!-- END PLAN NOTES -->
+
+
+
+			<!-- TIME & PEOPLE TABLE -->
+			<table>
+				<tr>
+					<td class="times_section">
+						{% if plan.plan_times.size != 0 %}
+							<div class="time_heading"> Service Times</div>
+								{% for time in plan.plan_times %}
+									<div class="time">
+										{% if time.name != "" %}
+											{{ time.name }}<br/>
+										{% endif %}
+										{{ time.starts_at | date: '%m/%d at %I:%M%p' | downcase }}<br/>
+									</div>
+								{% endfor %}
+						{% endif %}
+
+						{% if plan.rehearsal_times.size != 0 %}
+							<div class="time_heading"> Rehearsal Times</div>
+								{% for time in plan.rehearsal_times %}
+									<div class="time">
+										{% if time.name != "" %}
+											{{ time.name }}<br/>
+										{% endif %}
+										{{ time.starts_at | date: '%m/%d at %I:%M%p' | downcase }}<br/>
+									</div>
+								{% endfor %}
+						{% endif %}
+
+						{% if plan.other_times.size != 0 %}
+							<div class="time_heading"> Other Times</div>
+								{% for time in plan.other_times %}
+									<div class="time">
+										{% if time.name != "" %}
+											{{ time.name }}<br/>
+										{% endif %}
+										{{ time.starts_at | date: '%m/%d at %I:%M%p' | downcase }}<br/>
+									</div>
+								{% endfor %}
+						 {% endif %}
+					</td>
+					<td class="people_section">
+						<div class="service_segment_label">Service Leaders</div>
+						{% for category in service_leaders %}
+							<div class="people_category">
+								{{ category }}
+							</div>
+							{% for plan_person in plan.plan_people_not_declined %}
+								{% if plan_person.category.name == category %}
+									{% if current_position != plan_person.position %}
+										{% if current_position != '' %}</div>
+										{% endif %}
+										<div class="position">
+										<div class="person">{{ plan_person.position }}</div>
+									{% endif %}
+									<div>{{ plan_person.person.name }}{% if plan_person.status == 'U' %}&nbsp;<span class="icon-question">?</span>{% endif %}</div>
+									{% assign current_position = plan_person.position %}
+								{% endif %}
+							{% endfor %}
+						</div>
+						{% endfor %}
+
+						<div class="service_segment_label">Production Tech</div>
+						{% for category in tech_team %}
+							<div class="people_category">
+								{{ category }}
+							</div>
+							{% for plan_person in plan.plan_people_not_declined %}
+								{% if plan_person.category.name == category %}
+									{% if current_position != plan_person.position %}
+										{% if current_position != '' %}</div>
+										{% endif %}
+										<div class="position">
+										<div class="person">{{ plan_person.position }}</div>
+									{% endif %}
+									<div>{{ plan_person.person.name }}{% if plan_person.status == 'U' %}&nbsp;<span class="icon-question">?</span>{% endif %}</div>
+									{% assign current_position = plan_person.position %}
+								{% endif %}
+							{% endfor %}
+						</div>
+						{% endfor %}
+
+						<div class="service_segment_label">Worship Team</div>
+						{% for category in worship_team %}
+							<div class="people_category">
+								{{ category }}
+							</div>
+							{% for plan_person in plan.plan_people_not_declined %}
+								{% if plan_person.category.name == category %}
+									{% if current_position != plan_person.position %}
+										{% if current_position != '' %}</div>
+										{% endif %}
+										<div class="position">
+										<div class="person">{{ plan_person.position }}</div>
+									{% endif %}
+									<div>{{ plan_person.person.name }}{% if plan_person.status == 'U' %}&nbsp;<span class="icon-question">?</span>{% endif %}</div>
+									{% assign current_position = plan_person.position %}
+								{% endif %}
+							{% endfor %}
+						</div>
+						{% endfor %}
+					</td>
+				</tr>
+			</table>
+			<!-- END TIME & PEOPLE TABLE -->
+
+
+
+			<!-- FORCE PAGE BREAK -->
+			<div style="page-break-before: always;"></div>
+			<!-- END FORCE PAGE BREAK -->
+		{% endfor %}
+
+
+
+		{% for i in (1..print_report_propresenter) %}
+<!-- This section creates the report for the ProPresenter Operator.
+	This report includes lengths, titles, BPM, CCLI, and sequence details.
+	Item notes included can be specified in the configuration section at the top of this report. -->
+
+	<!-- HEADER TITLES TABLE -->
+	<table width="100%">
+		<tr>
+			<td colspan="3" class="ministry_title">{{ plan.ministry.name }}
+		</tr>
+		<tr>
+			<td class="plan_title" width="25%">{{ plan.plan_title }}</td>
+			<td class="plan_dates" width="50%">{{ plan.dates }}</td>
+			<td class="series_title" width="25%">ProPresenter</td>
+		</tr>
+	</table>
+	<!-- END HEADER TITLES TABLE -->
+
+
+
+			<!-- PLAN TABLE -->
+			<table id="plan" class="propresenter">
+				<thead>
+					<tr>
+						<th class="length">Item<br/>Length</th>
+						<th></th>
+						{% for propresenter_note in propresenter_notes %}
+							<th class="notes">
+								{{ propresenter_note }}
+							</th>
+						{% endfor %}
+					</tr>
+				</thead>
+
+				<tbody>
+					{% for item in plan.items %}
+						{% case item.item_type %}
+							{% when 'Header' %}
+								<tr style="page-break-after: avoid">
+									<td colspan="2" class="header">
+										{{ item.title }}
+									</td>
+									{% for propresenter_note in propresenter_notes %}
+										<td class="header"></td>
+									{% endfor %}
+							{% else %}
+								<tr class="item {% cycle 'odd', 'even'%}">
+									<td class="length item">{{ item.length }}</td>
+									<td class="item {% if item.song %}song{% endif %}">
+										<span class="item_title">{{ item.title }}</span>
+										{% if item.arrangement %}
+											{% if item.arrangement.music_key != "" %}
+												<span class="key">in [{{ item.arrangement.music_key }}]</span>
+											{% endif %}
+											{% if item.arrangement.bpm != "" %}
+												<span class="bpm">at {{ item.arrangement.bpm }} bpm</span>
+											{% endif %}
+										{% endif %}
+
+										<span class="credits">{% if item.song.ccli_id != nil %}(CCLI #{{item.song.ccli_id}}) {% endif %} </span>
+
+										{% if item.arrangement %}
+											<br><span class="sequence">--- {{ item.item_sequence }}</span>
+										{% endif %}
+
+										<pre class="description">{{ item.description }}</pre>
+									</td>
+
+									{% for propresenter_note in propresenter_notes %}
+										<td class="item item_notes">
+											{% for note in item.notes %}
+												{% if note.category_name == propresenter_note.name or note.category_name == propresenter_note %}{{ note.note }}{% endif %}
+											{% endfor %}</td>
+									{% endfor %}
+						{% endcase %}
+								</tr>
+					{% endfor %}
+				</tbody>
+
+				<tfoot>
+					<tr>
+						<th class="length">{{ plan.total_length }}</th>
+						<th></th>
+						{% for note_category in propresenter_notes %}
+							<th></th>
+						{% endfor %}
+					</tr>
+				</tfoot>
+			</table>
+			<!-- END PLAN TABLE -->
+
+
+
+			<!-- FORCE PAGE BREAK -->
+			<div style="page-break-before: always;"></div>
+			<!-- END FORCE PAGE BREAK -->
+
+
+
+			<!-- PLAN NOTES -->
+			<div class="service_segment_label">Plan Notes</div>
+			<table id="notes">
+				{% for prod_plan_note in prod_plan_notes %}
+					{% for note in plan.notes %}
+						{% if prod_plan_note == note.category_name %}
+							<tr>
+								<td width="25%"><strong>{{ note.category_name }}:</strong></td>
+								<td> {{ note.note }}</td>
+							</tr>
+						{% endif %}
+					{% endfor %}
+				{% endfor %}
+			</table>
+			<!-- END PLAN NOTES -->
+
+
+
+			<!-- TIME & PEOPLE TABLE -->
+			<table>
+				<tr>
+					<td class="times_section">
+						{% if plan.plan_times.size != 0 %}
+							<div class="time_heading"> Service Times</div>
+								{% for time in plan.plan_times %}
+									<div class="time">
+										{% if time.name != "" %}
+											{{ time.name }}<br/>
+										{% endif %}
+										{{ time.starts_at | date: '%m/%d at %I:%M%p' | downcase }}<br/>
+									</div>
+								{% endfor %}
+						{% endif %}
+
+						{% if plan.rehearsal_times.size != 0 %}
+							<div class="time_heading"> Rehearsal Times</div>
+								{% for time in plan.rehearsal_times %}
+									<div class="time">
+										{% if time.name != "" %}
+											{{ time.name }}<br/>
+										{% endif %}
+										{{ time.starts_at | date: '%m/%d at %I:%M%p' | downcase }}<br/>
+									</div>
+								{% endfor %}
+						{% endif %}
+
+						{% if plan.other_times.size != 0 %}
+							<div class="time_heading"> Other Times</div>
+								{% for time in plan.other_times %}
+									<div class="time">
+										{% if time.name != "" %}
+											{{ time.name }}<br/>
+										{% endif %}
+										{{ time.starts_at | date: '%m/%d at %I:%M%p' | downcase }}<br/>
+									</div>
+								{% endfor %}
+						 {% endif %}
+					</td>
+					<td class="people_section">
+						<div class="service_segment_label">Service Leaders</div>
+						{% for category in service_leaders %}
+							<div class="people_category">
+								{{ category }}
+							</div>
+							{% for plan_person in plan.plan_people_not_declined %}
+								{% if plan_person.category.name == category %}
+									{% if current_position != plan_person.position %}
+										{% if current_position != '' %}</div>
+										{% endif %}
+										<div class="position">
+										<div class="person">{{ plan_person.position }}</div>
+									{% endif %}
+									<div>{{ plan_person.person.name }}{% if plan_person.status == 'U' %}&nbsp;<span class="icon-question">?</span>{% endif %}</div>
+									{% assign current_position = plan_person.position %}
+								{% endif %}
+							{% endfor %}
+						</div>
+						{% endfor %}
+
+						<div class="service_segment_label">Production Tech</div>
+						{% for category in tech_team %}
+							<div class="people_category">
+								{{ category }}
+							</div>
+							{% for plan_person in plan.plan_people_not_declined %}
+								{% if plan_person.category.name == category %}
+									{% if current_position != plan_person.position %}
+										{% if current_position != '' %}</div>
+										{% endif %}
+										<div class="position">
+										<div class="person">{{ plan_person.position }}</div>
+									{% endif %}
+									<div>{{ plan_person.person.name }}{% if plan_person.status == 'U' %}&nbsp;<span class="icon-question">?</span>{% endif %}</div>
+									{% assign current_position = plan_person.position %}
+								{% endif %}
+							{% endfor %}
+						</div>
+						{% endfor %}
+
+						<div class="service_segment_label">Worship Team</div>
+						{% for category in worship_team %}
+							<div class="people_category">
+								{{ category }}
+							</div>
+							{% for plan_person in plan.plan_people_not_declined %}
+								{% if plan_person.category.name == category %}
+									{% if current_position != plan_person.position %}
+										{% if current_position != '' %}</div>
+										{% endif %}
+										<div class="position">
+										<div class="person">{{ plan_person.position }}</div>
+									{% endif %}
+									<div>{{ plan_person.person.name }}{% if plan_person.status == 'U' %}&nbsp;<span class="icon-question">?</span>{% endif %}</div>
+									{% assign current_position = plan_person.position %}
+								{% endif %}
+							{% endfor %}
+						</div>
+						{% endfor %}
+					</td>
+				</tr>
+			</table>
+			<!-- END TIME & PEOPLE TABLE -->
+
+
+
+			<!-- FORCE PAGE BREAK -->
+			<div style="page-break-before: always;"></div>
+			<!-- END FORCE PAGE BREAK -->
+		{% endfor %}
+
+
+
+		{% for i in (1..print_report_lighting) %}
+<!-- This section creates the report for the Lighting Operator.
+	This report includes lengths, titles, and song BPM.
+	Item notes included can be specified in the configuration section at the top of this report. -->
+
+	<!-- HEADER TITLES TABLE -->
+	<table width="100%">
+		<tr>
+			<td colspan="3" class="ministry_title">{{ plan.ministry.name }}
+		</tr>
+		<tr>
+			<td class="plan_title" width="25%">{{ plan.plan_title }}</td>
+			<td class="plan_dates" width="50%">{{ plan.dates }}</td>
+			<td class="series_title" width="25%">Lighting</td>
+		</tr>
+	</table>
+	<!-- END HEADER TITLES TABLE -->
+
+
+
+			<!-- PLAN TABLE -->
+			<table id="plan" class="lighting">
+				<thead>
+					<tr>
+						<th class="length">Item<br/>Length</th>
+						<th></th>
+						{% for lighting_note in lighting_notes %}
+							<th class="notes">
+								{{ lighting_note }}
+							</th>
+						{% endfor %}
+					</tr>
+				</thead>
+
+				<tbody>
+					{% for item in plan.items %}
+						{% case item.item_type %}
+							{% when 'Header' %}
+								<tr style="page-break-after: avoid">
+									<td colspan="2" class="header">
+										{{ item.title }}
+									</td>
+									{% for lighting_note in lighting_notes %}
+										<td class="header"></td>
+									{% endfor %}
+							{% else %}
+								<tr class="item {% cycle 'odd', 'even'%}">
+									<td class="length item">{{ item.length }}</td>
+									<td class="item {% if item.song %}song{% endif %}">
+										<span class="item_title">{{ item.title }}</span>
+										{% if item.arrangement %}
+											{% if item.arrangement.bpm != "" %}
+												<span class="bpm">at {{ item.arrangement.bpm }} bpm</span>
+											{% endif %}
+										{% endif %}
+										<pre class="description">{{ item.description }}</pre>
+									</td>
+
+									{% for lighting_note in lighting_notes %}
+										<td class="item item_notes">
+											{% for note in item.notes %}
+												{% if note.category_name == lighting_note.name or note.category_name == lighting_note %}{{ note.note }}{% endif %}
+											{% endfor %}</td>
+									{% endfor %}
+						{% endcase %}
+								</tr>
+					{% endfor %}
+				</tbody>
+
+				<tfoot>
+					<tr>
+						<th class="length">{{ plan.total_length }}</th>
+						<th></th>
+						{% for note_category in lighting_notes %}
+							<th></th>
+						{% endfor %}
+					</tr>
+				</tfoot>
+			</table>
+			<!-- END PLAN TABLE -->
+
+
+
+			<!-- FORCE PAGE BREAK -->
+			<div style="page-break-before: always;"></div>
+			<!-- END FORCE PAGE BREAK -->
+
+
+
+			<!-- PLAN NOTES -->
+			<div class="service_segment_label">Plan Notes</div>
+			<table id="notes">
+				{% for prod_plan_note in prod_plan_notes %}
+					{% for note in plan.notes %}
+						{% if prod_plan_note == note.category_name %}
+							<tr>
+								<td width="25%"><strong>{{ note.category_name }}:</strong></td>
+								<td> {{ note.note }}</td>
+							</tr>
+						{% endif %}
+					{% endfor %}
+				{% endfor %}
+			</table>
+			<!-- END PLAN NOTES -->
+
+
+
+			<!-- TIME & PEOPLE TABLE -->
+			<table>
+				<tr>
+					<td class="times_section">
+						{% if plan.plan_times.size != 0 %}
+							<div class="time_heading"> Service Times</div>
+								{% for time in plan.plan_times %}
+									<div class="time">
+										{% if time.name != "" %}
+											{{ time.name }}<br/>
+										{% endif %}
+										{{ time.starts_at | date: '%m/%d at %I:%M%p' | downcase }}<br/>
+									</div>
+								{% endfor %}
+						{% endif %}
+
+						{% if plan.rehearsal_times.size != 0 %}
+							<div class="time_heading"> Rehearsal Times</div>
+								{% for time in plan.rehearsal_times %}
+									<div class="time">
+										{% if time.name != "" %}
+											{{ time.name }}<br/>
+										{% endif %}
+										{{ time.starts_at | date: '%m/%d at %I:%M%p' | downcase }}<br/>
+									</div>
+								{% endfor %}
+						{% endif %}
+
+						{% if plan.other_times.size != 0 %}
+							<div class="time_heading"> Other Times</div>
+								{% for time in plan.other_times %}
+									<div class="time">
+										{% if time.name != "" %}
+											{{ time.name }}<br/>
+										{% endif %}
+										{{ time.starts_at | date: '%m/%d at %I:%M%p' | downcase }}<br/>
+									</div>
+								{% endfor %}
+						 {% endif %}
+					</td>
+					<td class="people_section">
+						<div class="service_segment_label">Service Leaders</div>
+						{% for category in service_leaders %}
+							<div class="people_category">
+								{{ category }}
+							</div>
+							{% for plan_person in plan.plan_people_not_declined %}
+								{% if plan_person.category.name == category %}
+									{% if current_position != plan_person.position %}
+										{% if current_position != '' %}</div>
+										{% endif %}
+										<div class="position">
+										<div class="person">{{ plan_person.position }}</div>
+									{% endif %}
+									<div>{{ plan_person.person.name }}{% if plan_person.status == 'U' %}&nbsp;<span class="icon-question">?</span>{% endif %}</div>
+									{% assign current_position = plan_person.position %}
+								{% endif %}
+							{% endfor %}
+						</div>
+						{% endfor %}
+
+						<div class="service_segment_label">Production Tech</div>
+						{% for category in tech_team %}
+							<div class="people_category">
+								{{ category }}
+							</div>
+							{% for plan_person in plan.plan_people_not_declined %}
+								{% if plan_person.category.name == category %}
+									{% if current_position != plan_person.position %}
+										{% if current_position != '' %}</div>
+										{% endif %}
+										<div class="position">
+										<div class="person">{{ plan_person.position }}</div>
+									{% endif %}
+									<div>{{ plan_person.person.name }}{% if plan_person.status == 'U' %}&nbsp;<span class="icon-question">?</span>{% endif %}</div>
+									{% assign current_position = plan_person.position %}
+								{% endif %}
+							{% endfor %}
+						</div>
+						{% endfor %}
+
+						<div class="service_segment_label">Worship Team</div>
+						{% for category in worship_team %}
+							<div class="people_category">
+								{{ category }}
+							</div>
+							{% for plan_person in plan.plan_people_not_declined %}
+								{% if plan_person.category.name == category %}
+									{% if current_position != plan_person.position %}
+										{% if current_position != '' %}</div>
+										{% endif %}
+										<div class="position">
+										<div class="person">{{ plan_person.position }}</div>
+									{% endif %}
+									<div>{{ plan_person.person.name }}{% if plan_person.status == 'U' %}&nbsp;<span class="icon-question">?</span>{% endif %}</div>
+									{% assign current_position = plan_person.position %}
+								{% endif %}
+							{% endfor %}
+						</div>
+						{% endfor %}
+					</td>
+				</tr>
+			</table>
+			<!-- END TIME & PEOPLE TABLE -->
+
+
+
+			<!-- FORCE PAGE BREAK -->
+			<div style="page-break-before: always;"></div>
+			<!-- END FORCE PAGE BREAK -->
+		{% endfor %}
+
+
+
+		{% for i in (1..print_report_video) %}
+<!-- This section creates the report for the Lighting Operator.
+	This report includes lengths, titles, and song BPM.
+	Item notes included can be specified in the configuration section at the top of this report. -->
+
+	<!-- HEADER TITLES TABLE -->
+	<table width="100%">
+		<tr>
+			<td colspan="3" class="ministry_title">{{ plan.ministry.name }}
+		</tr>
+		<tr>
+			<td class="plan_title" width="25%">{{ plan.plan_title }}</td>
+			<td class="plan_dates" width="50%">{{ plan.dates }}</td>
+			<td class="series_title" width="25%">Video</td>
+		</tr>
+	</table>
+	<!-- END HEADER TITLES TABLE -->
+
+
+
+			<!-- PLAN TABLE -->
+			<table id="plan" class="video">
+				<thead>
+					<tr>
+						<th class="length">Item<br/>Length</th>
+						<th></th>
+						{% for video_note in video_notes %}
+							<th class="notes">
+								{{ video_note }}
+							</th>
+						{% endfor %}
+					</tr>
+				</thead>
+
+				<tbody>
+					{% for item in plan.items %}
+						{% case item.item_type %}
+							{% when 'Header' %}
+								<tr style="page-break-after: avoid">
+									<td colspan="2" class="header">
+										{{ item.title }}
+									</td>
+									{% for video_note in video_notes %}
+										<td class="header"></td>
+									{% endfor %}
+							{% else %}
+								<tr class="item {% cycle 'odd', 'even'%}">
+									<td class="length item">{{ item.length }}</td>
+									<td class="item {% if item.song %}song{% endif %}">
+										<span class="item_title">{{ item.title }}</span>
+										{% if item.arrangement %}
+											{% if item.arrangement.bpm != "" %}
+												<span class="bpm">at {{ item.arrangement.bpm }} bpm</span>
+											{% endif %}
+										{% endif %}
+
+										<pre class="description">{{ item.description }}</pre>
+									</td>
+
+									{% for video_note in video_notes %}
+										<td class="item item_notes">
+											{% for note in item.notes %}
+												{% if note.category_name == video_note.name or note.category_name == video_note %}{{ note.note }}{% endif %}
+											{% endfor %}</td>
+									{% endfor %}
+						{% endcase %}
+								</tr>
+					{% endfor %}
+				</tbody>
+
+				<tfoot>
+					<tr>
+						<th class="length">{{ plan.total_length }}</th>
+						<th></th>
+						{% for note_category in video_notes %}
+							<th></th>
+						{% endfor %}
+					</tr>
+				</tfoot>
+			</table>
+			<!-- END PLAN TABLE -->
+
+
+
+			<!-- FORCE PAGE BREAK -->
+			<div style="page-break-before: always;"></div>
+			<!-- END FORCE PAGE BREAK -->
+
+
+
+			<!-- PLAN NOTES -->
+			<div class="service_segment_label">Plan Notes</div>
+			<table id="notes">
+				{% for prod_plan_note in prod_plan_notes %}
+					{% for note in plan.notes %}
+						{% if prod_plan_note == note.category_name %}
+							<tr>
+								<td width="25%"><strong>{{ note.category_name }}:</strong></td>
+								<td> {{ note.note }}</td>
+							</tr>
+						{% endif %}
+					{% endfor %}
+				{% endfor %}
+			</table>
+			<!-- END PLAN NOTES -->
+
+
+
+			<!-- TIME & PEOPLE TABLE -->
+			<table>
+				<tr>
+					<td class="times_section">
+						{% if plan.plan_times.size != 0 %}
+							<div class="time_heading"> Service Times</div>
+								{% for time in plan.plan_times %}
+									<div class="time">
+										{% if time.name != "" %}
+											{{ time.name }}<br/>
+										{% endif %}
+										{{ time.starts_at | date: '%m/%d at %I:%M%p' | downcase }}<br/>
+									</div>
+								{% endfor %}
+						{% endif %}
+
+						{% if plan.rehearsal_times.size != 0 %}
+							<div class="time_heading"> Rehearsal Times</div>
+								{% for time in plan.rehearsal_times %}
+									<div class="time">
+										{% if time.name != "" %}
+											{{ time.name }}<br/>
+										{% endif %}
+										{{ time.starts_at | date: '%m/%d at %I:%M%p' | downcase }}<br/>
+									</div>
+								{% endfor %}
+						{% endif %}
+
+						{% if plan.other_times.size != 0 %}
+							<div class="time_heading"> Other Times</div>
+								{% for time in plan.other_times %}
+									<div class="time">
+										{% if time.name != "" %}
+											{{ time.name }}<br/>
+										{% endif %}
+										{{ time.starts_at | date: '%m/%d at %I:%M%p' | downcase }}<br/>
+									</div>
+								{% endfor %}
+						 {% endif %}
+					</td>
+					<td class="people_section">
+						<div class="service_segment_label">Service Leaders</div>
+						{% for category in service_leaders %}
+							<div class="people_category">
+								{{ category }}
+							</div>
+							{% for plan_person in plan.plan_people_not_declined %}
+								{% if plan_person.category.name == category %}
+									{% if current_position != plan_person.position %}
+										{% if current_position != '' %}</div>
+										{% endif %}
+										<div class="position">
+										<div class="person">{{ plan_person.position }}</div>
+									{% endif %}
+									<div>{{ plan_person.person.name }}{% if plan_person.status == 'U' %}&nbsp;<span class="icon-question">?</span>{% endif %}</div>
+									{% assign current_position = plan_person.position %}
+								{% endif %}
+							{% endfor %}
+						</div>
+						{% endfor %}
+
+						<div class="service_segment_label">Production Tech</div>
+						{% for category in tech_team %}
+							<div class="people_category">
+								{{ category }}
+							</div>
+							{% for plan_person in plan.plan_people_not_declined %}
+								{% if plan_person.category.name == category %}
+									{% if current_position != plan_person.position %}
+										{% if current_position != '' %}</div>
+										{% endif %}
+										<div class="position">
+										<div class="person">{{ plan_person.position }}</div>
+									{% endif %}
+									<div>{{ plan_person.person.name }}{% if plan_person.status == 'U' %}&nbsp;<span class="icon-question">?</span>{% endif %}</div>
+									{% assign current_position = plan_person.position %}
+								{% endif %}
+							{% endfor %}
+						</div>
+						{% endfor %}
+
+						<div class="service_segment_label">Worship Team</div>
+						{% for category in worship_team %}
+							<div class="people_category">
+								{{ category }}
+							</div>
+							{% for plan_person in plan.plan_people_not_declined %}
+								{% if plan_person.category.name == category %}
+									{% if current_position != plan_person.position %}
+										{% if current_position != '' %}</div>
+										{% endif %}
+										<div class="position">
+										<div class="person">{{ plan_person.position }}</div>
+									{% endif %}
+									<div>{{ plan_person.person.name }}{% if plan_person.status == 'U' %}&nbsp;<span class="icon-question">?</span>{% endif %}</div>
+									{% assign current_position = plan_person.position %}
+								{% endif %}
+							{% endfor %}
+						</div>
+						{% endfor %}
+					</td>
+				</tr>
+			</table>
+			<!-- END TIME & PEOPLE TABLE -->
+
+
+
+			<!-- FORCE PAGE BREAK -->
+			<div style="page-break-before: always;"></div>
+			<!-- END FORCE PAGE BREAK -->
+		{% endfor %}
+
+
+
+		{% for i in (1..print_report_usher) %}
+<!-- This section creates the report for the Usher Team.
+	This report includes times (not lengths) and titles.
+	Item notes included can be specified in the configuration section at the top of this report. -->
+
+	<!-- HEADER TITLES TABLE -->
+	<table width="100%">
+		<tr>
+			<td colspan="3" class="ministry_title">{{ plan.ministry.name }}
+		</tr>
+		<tr>
+			<td class="plan_title" width="25%">{{ plan.plan_title }}</td>
+			<td class="plan_dates" width="50%">{{ plan.dates }}</td>
+			<td class="series_title" width="25%">Deacons</td>
+		</tr>
+	</table>
+	<!-- END HEADER TITLES TABLE -->
+
+
+
+		<!-- PLAN TABLE -->
+		<table id="plan">
+			<thead>
+				<tr>
+					{% for time in plan.plan_times %}
+						<th class="time">{{ time.starts_at | date: '%m/%d<br/>%I:%M%p' | downcase }}</th>
+					{% endfor %}
+
+					<th></th>
+
+					{% for usher_note in usher_notes %}
+						<th class="notes">
+							{{ usher_note }}
+						</th>
+					{% endfor %}
+				</tr>
+		  	</thead>
+
+			<tbody>
+				{% for item in plan.items %}
+					{% case item.item_type %}
+						{% when 'Header' %}
+							<tr style="page-break-after: avoid">
+								<td colspan="{{ plan.plan_times | size | add: 1 }}" class="header">
+									{{ item.title }}
+								</td>
+								{% for usher_note in usher_notes %}
+									<td class="header"></td>
+								{% endfor %}
+						{% else %}
+							<tr class="item {% cycle 'odd', 'even'%}">
+								{% for time in plan.plan_times %}
+									<td class="time item">
+										{% for item_time in item.times %}{% if item_time.time_id == time.id %}{{ item_time.actual_time | date: '%I:%M%p' | downcase }} {% endif %}{% endfor %}
+									</td>
+								{% endfor %}
+								<td class="item {% if item.song %}song{% endif %}">
+									<span class="item_title">{{ item.title }}</span>
+									<pre class="description">{{ item.description }}</pre>
+								</td>
+
+								{% for usher_note in usher_notes %}
+									<td class="item item_notes">
+										{% for note in item.notes %}
+											{% if note.category_name == usher_note.name or note.category_name == usher_note %}{{ note.note }}{% endif %}
+										{% endfor %}</td>
+								{% endfor %}
+					{% endcase %}
+							</tr>
+				{% endfor %}
+			</tbody>
+
+			<tfoot>
+				<tr>
+					{% for time in plan.plan_times %}
+						<th class="time">{{ time.ends_at | date: '%I:%M%p' | downcase }}</th>
+					{% endfor %}
+					<th></th>
+					{% for note_category in usher_notes %}
+						<th></th>
+					{% endfor %}
+				</tr>
+			</tfoot>
+		</table>
+		<!-- END PLAN TABLE -->
+
+
+
+		<!-- PLAN NOTES -->
+		<div>&nbsp;</div>
+		<div class="service_segment_label">Plan Notes</div>
+		<table id="notes">
+			{% for usher_plan_note in usher_plan_notes %}
+				{% for note in plan.notes %}
+					{% if usher_plan_note == note.category_name %}
+						<tr>
+							<td width="25%"><strong>{{ note.category_name }}:</strong></td>
+							<td> {{ note.note }}</td>
+						</tr>
+					{% endif %}
+				{% endfor %}
+			{% endfor %}
+		</table>
+		<!-- END PLAN NOTES -->
+		{% endfor %}
+
+
+
+	</body>
+</html>
