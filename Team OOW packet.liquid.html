@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<!-- CUSTOMIZATION:
+CATEGORY NAME OF NOTES TO PRINT FOR COLUMN 1
+{% assign notes_column_1_category =  %}
+
+CATEGORY NAME OF NOTES TO PRINT FOR COLUMN 2
+{% assign notes_column_2_category =  %}
+
+CATEGORY NAME OF NOTES TO PRINT FOR COLUMN 3
+{% assign notes_column_3_category =  %}
+
+SPECIAL ITEM STYLING
+{% assign item_styles = ".item.song { background-color: /*rgb(255, 237, 209)*/; }" %}
+
+SPECIFIC POSITIONS
+{% assign audio_A1 = "Audio FOH" %}
+{% assign audio_A2 = "Audio Monitors" %}
+
+PRINT ITEM DESCRIPTIONS?
+{% assign print_item_description = true %}
+
+PAGE BREAK FOR ROSTER?
+{% assign force_page_break = true %}
+
+PRINT REHEARSAL TIMES?
+{% assign print_rehearsal_times = true %}
+
+PRINT OTHER TIMES?
+{% assign print_other_times = true %}
+
+PLAN PEOPLE OPTIONS
+	{% assign print_plan_people = true %}
+
+	TO ONLY PRINT SPECIFIC PEOPLE CATEGORIES SET THIS TO false
+	{% assign all_categories = false %}
+
+	SET INDIVIDUAL CATEGORY NAMES OF PEOPLE TO PRINT (and set above to false)
+	{% array my_categories = "Leadership", "Band", "Production", "Choir", "Media" %}
+
+TEAMS OF PEOPLE TO PRINT REPORTS FOR
+{% array categories_to_print = "Production", "Band", "Leadership" %}
+
+POSITION TO PRINT (if you have one specific position outside of a TEAM you'd also like to print)
+{% assign position_to_print =  %}
+
+NOTES TO PRINT WITH PLAN (any note fields you'd like to print with the whole plan)
+{% array notes_categories = "Our Win", "General", "Quick Edit slides" %}
+
+PRINT ITEM TIMES
+{% assign print_plan_item_times = true %}
+-->
+
+<html>
+	<head>
+		<title>{{ plan.ministry.name }}:: {{ plan.dates }}</title>
+		<style>
+			* { font-family: Verdana, Arial; padding:0; margin:0; font-size: 8pt; }
+		.item { padding: 5px; }
+		#plan thead { display: table-header-group; border: solid 4px black; }
+		#plan { border-collapse: collapse; border: solid 4px black; width: 100%; }
+		#plan th { background-color: black; color: white; text-align: right; }
+		.header { background-color: black; color: white; }
+		#header { width: 100%; }
+		.times { width: 100%; border: solid 2px #999; }
+		.times thead th { background-color: #eee; }
+		.times tbody th { width: 10%; }
+		.times tbody td { width: 40%; }
+
+		.evenpreservice { background-color: #999999; color: #000000; font-style: italic; }
+		.oddpreservice { background-color: #999999; color: #000000; font-style: italic; }
+		.even { background-color: #ffffff; color: #000000; }
+		.odd { background-color: #cccccc; color: #000000; }
+		{{item_styles}}
+		.checkbox { text-align:center; color: #cccccc; height: 1.1em; width: 1.1em; border: 1px solid #000; background-color: #fff; float:left; margin-right:3px; }
+		.specific-note { font-size: 1em; color: #000000; font-style: normal; background:#ffcc00; }
+		.team-note { font-size: 1em; color: #000000; font-style: italic; background:#ffbb00; }
+		.special-note { font-size: .8em ; color: #000000; font-style: normal; font-weight: bold; padding: 1px; text-align: right; }
+		.todo-column { font-size: 1em; }
+		.sequence { font-family: monospace; font-size:1em; color:#444444; } /* Blue #0025FF */
+
+		.times_section { padding: 10px; width: 200px; border-right: dotted 2px black; vertical-align: top; }
+		.time_heading { clear: both; border-bottom: solid 1px lightgrey; padding-top: 10px; font-weight: bold; font-size: 12pt; }
+		table#plan .time { width: 70px; text-align: center; }
+
+		.people_section { padding: 10px; vertical-align: top; }
+			.people_category { clear: both; border-bottom: solid 1px lightgrey; font-weight: bold; }
+			.position { font-weight: bold; }
+			.person { font-size: 9pt;
+				width: 170px;
+				display: inline-block;
+				vertical-align: top;
+				margin-bottom: 10px;
+
+				/* For IE 7 */
+				zoom: 1;
+				*display: inline;}
+
+			.icon-question{
+				display: inline-block;
+				color: #fff;
+				text-align: center;
+				font-size: 1em;
+				background: #666;
+				border-radius: 50%;
+				width: 1em;
+				height: 1em;
+				line-height: 1em;
+				padding: .1em;
+			}
+        </style>
+	</head>
+<body>
+	{% for category in categories_to_print %}						
+	{% for plan_person in plan.plan_people_not_declined %}					
+		{% if (plan_person.category.name == category) or (plan_person.position == position_to_print)%}
+	<!-- Print specific items for this position -->
+		<div style="page-break-before: always;"></div>
+	<table id="header" width="100%">
+		<tr>
+			<td rowspan="2" width="70pt" style="background-color: black; color:white; font-weight: bold; text-align: center;">SERVICE ORDER</td>
+			<td colspan="2" style="background-color: black; color:white; font-size: 2em; font-weight: bold; text-align: center; padding: 3px;">{{ plan.dates }}</td>
+			<td rowspan="2" width="200pt" style="background-color: black; color:white; font-weight: bold; text-align: center;">{{ plan_person.position }}: {{ plan_person.person.name }}<br/><span style="font-size:1em;color:#999;">Printed {{ now | date: "%m/%d/%Y %I:%M%p" }}</span></td>
+		</tr>
+		<tr>
+			<td style="text-align: center;">{{ plan.ministry.name }}&nbsp;&nbsp;&nbsp;{{ plan.plan_title }}</td>
+		</tr>
+	</table>
+	<div style="background-color: black; height: 6pt; margin: 5pt 0;"></div>
+	<table width="100%;">
+		<tr>
+		<td class="todo-column" style="width: 150pt; border: solid 1px black; vertical-align: top; padding: 5px; padding-top: 0px; ">
+		  <!-- TIMES -->
+		 {% for time in plan.plan_times %}<span id="times"><strong>{{ time.starts_at | date: '%I:%M' }}</strong>&nbsp;&nbsp;{{ time.name }}<br/></span>{% endfor %}<br/>
+		  <!-- END TIMES -->
+	 <!-- CHECKLIST -->
+	  {% capture checklist_name %}Checklist - {{ plan_person.category.name }} - {{ plan_person.position }}{% endcapture %}
+	  {% assign checklist_rehearsalitems = 0 %}
+	  {% assign checklist_beforeitems = 0 %}
+	  {% assign checklist_afteritems = 0 %}
+
+	  {% for note in plan.notes %}
+		{% if note.category_name == checklist_name %}
+		  {% if note.note contains '*' %}
+			{% assign checklist_rehearsalitems = 1 %}
+		  {% elsif note.note contains '~'%}
+			{% assign checklist_afteritems = 1 %}
+		  {% else %}
+			{% assign checklist_beforeitems = 1 %}
+		  {% endif %}
+		{% endif %}
+	  {% endfor %}
+
+	  {% if checklist_rehearsalitems == 1 %}
+	  <span id="during-rehearsal"><strong>DURING REHEARSAL:</strong></span>
+	  <table class="todo-column" width="100%">
+	  {% for note in plan.notes %}
+		{% if note.category_name == checklist_name %}
+			  {% if note.note contains '*' %}
+				<tr><td class="todo-column">
+				<div class="checkbox">&nbsp;</div>
+				&nbsp;{{ note.note | remove: '*' }}
+				</td></tr>
+			  {% endif %}
+		{% endif %}
+		  {% endfor %}
+		</table>
+		  <br/>
+	  {% endif %}
+
+	  {% if checklist_beforeitems == 1 %}
+	  <span id="before-service"><strong>BEFORE EACH SERVICE:</strong></span>
+	  <table class="todo-column" width="100%">
+		{% for note in plan.notes %}
+		{% if note.category_name == checklist_name %}
+			  {% if note.note contains '*' %}
+			  {% elsif note.note contains '~' %}
+			  {% else %}
+					<tr><td class="todo-column">
+				   {% for time in plan.plan_times %}
+					{% if forloop.length == 1 %}
+					  {% assign current_service = "&nbsp;" %}
+					{% else %}
+					 {% assign current_service = forloop.index %}
+				   {% endif %}
+					{% for plan_person_time in plan_person.service_times %}
+						 {% if plan_person_time.id == time.id %}
+							 <div class="checkbox">{{ current_service }}</div>
+						 {% endif %}
+					{% endfor %}
+				  {% endfor %}
+					&nbsp;{{ note.note | remove: '*' }}
+				   </td></tr>
+			  {% endif %}
+		{% endif %}
+		  {% endfor %}
+	  </table><br/>
+	  {% endif %}
+
+	  {% if checklist_afteritems == 1 %}
+	  <span id="after-service"><strong>AFTER EACH SERVICE:</strong></span><br />
+		{% for note in plan.notes %}
+		  {% if note.category_name == checklist_name %}
+			  {% if note.note contains '~' %}
+				  <span id="after-note"><strong>{{ note.note | remove: '~' }}</strong></span>
+				  {% for time in plan.plan_times %}
+					{% if forloop.length == 1 %}
+					  {% assign current_service = "&nbsp;" %}
+					{% else %}
+					 {% assign current_service = forloop.index %}
+				   {% endif %}
+					<table class="todo-column">
+					  {% for plan_person_time in plan_person.service_times %}
+						 {% if plan_person_time.id == time.id %}
+					  <tr><td class="todo-column"><div class="checkbox">{{ current_service }}</div></td>
+						<td>&nbsp;________________________</td></tr>
+						 {% endif %}
+					{% endfor %}
+				  </table>
+				  {% endfor %}
+					<br/>
+			  {% endif %}
+		  {% endif %}
+		{% endfor %}
+	  {% endif %}
+
+	<!-- END CHECKLIST -->
+	<!-- PLAN NOTES -->
+	<!-- {% if plan.notes.size > 0 %}<br/><strong>Notes:</strong><br/><br/>{% endif %} -->
+	  <!-- PRINT GENERAL NOTES DEFINED IN ARRAY -->
+		{% for my_note in notes_categories %}
+		  {% for note in plan.notes %}
+		{% if my_note == note.category_name %}
+			  {% if note.note != "" %}
+				<span id="plan-notes"><strong>{{ my_note }}</strong>: {{ note.note }}<br/><br/></span>
+			  {% endif %}
+		{% endif %}
+		  {% endfor %}
+		{% endfor %}
+	   <!-- PRINT SPECIFIC POSITION NOTES -->
+	{% capture plannotes_name %}{{ plan_person.category.name }} - {{ plan_person.position }}{% endcapture %}
+		{% for note in plan.notes %}
+		  {% if note.category_name contains plannotes_name %}
+			{% if note.category_name contains "Checklist" %}
+			{% else %}
+			  {% if note.note != "" %} 
+				<span id="position-plan-notes" style="font-size:.8em;"><strong>{{ note.category_name}}</strong>: {{ note.note }}<br/><br/></span>
+			  {% endif %}
+			{% endif %}
+		  {% endif %}
+		{% endfor %}
+	<!-- END PLAN NOTES -->
+		</td>
+
+		<td valign="top">
+				<table id="plan">
+			  <thead>
+					<tr>
+				<th></th>
+				<th></th>
+				<th>{{ notes_column_1_category }}</th>
+				<th>{{ notes_column_2_category }}</th>
+				<th>{{ notes_column_3_category }}</th>
+					</tr>
+			  </thead>
+				{% assign current_header_title = "" %}
+				{% assign encountered_duringservice_item = 0 %}
+				{% for item in plan.items %}
+				{% case item.item_type %}
+					{% when 'Header' %}
+						{% assign current_header_title = item.title %}
+						{% assign current_header_printed = 0 %}
+					{% else %}
+						{% if item.is_preservice == false and encountered_duringservice_item == 0 %}
+							{% assign encountered_duringservice_item = 1 %}
+							<tr><td class="header" colspan="5">START OF SERVICE</td></tr>
+						{% endif %}
+						<tr class="{% cycle 'even', 'odd' %}{% if item.is_preservice or item.is_postservice %}preservice{% endif %}">
+							<td class="item">
+						   {% if item.is_preservice or item.is_postservice %}
+							  {% if print_plan_item_times == true %}
+								{% for time in plan_person.service_times %}
+									{% for item_time in item.times %}
+										{% if item_time.time_id == time.id %}
+											<span style="background-color:eeeeee;font-size:.8em;">{{ item_time.actual_time | date: '%I:%M%p' | downcase }}<br/></span>                                                                                          
+										{% endif %}
+									{% endfor %}
+								{% endfor %}
+							  {% else %}
+								<span style="background-color:eeeeee;font-size:.8em;">
+								  {% if item.length != "0:00" %}
+										{{ item.length }} {% if item.is_preservice %}before{% endif %}{% if item.is_postservice %}after{% endif %}
+									{% endif %}
+								</span>
+							  {% endif %}
+						   {% else %}
+								 <span style="background-color:eeeeee;font-size:.8em;font-weight:bold;">
+									{% if item.length != "0:00" %}
+										{{ item.length }}
+									{% endif %}
+								 </span>
+						   {% endif %}
+							</td>
+							<td class="item{% if (item.item_type == "Song") %} song{% endif %}{% if (item.item_type == "Media") %} media{% endif %}">
+								{% if current_header_printed == 0 %}
+								<span style="background-color:eeeeee;font-size:.8em;">{{ current_header_title }}</span>&nbsp;&nbsp;
+								{% assign current_header_printed = 1 %}
+								{% endif %}
+								<strong>{{ item.title }}</strong><br/>
+								{% if (item.description != "") and (print_item_description == true) %}
+								<span style="font-size:1em;">{{ item.description }}</span><br/>
+								{% endif %}
+							  {% for note in item.notes %}
+								{% if (note.category_name == plan_person.position) %}<span class="specific-note">{{ note.note }}</span><br/>{% endif %}
+								{% if (note.category_name == plan_person.category.name) %}<span class="team-note">{{ note.note }}</span><br/>{% endif %}
+								{% if (note.category_name == "Ableton") and (plan_person.position == audio_A1 or plan_person.position == audio_A2 or plan_person.category.name == "Band") %}<span class="team-note">{{ note.note }}</span><br/>{% endif %}
+							  {% endfor %}
+							  {% if (item.item_type == "Song") and (plan_person.category.name == "Band" or plan_person.category.name == "Production") %}
+								<span class="sequence">{{ item.item_sequence }}</span>
+							  {% endif %}
+							</td>
+							<td class="special-note">{% for note in item.notes %}{% if note.category_name == notes_column_1_category %}{{ note.note }}{% endif %}{% endfor %}</td>
+							<td class="special-note">{% for note in item.notes %}{% if note.category_name == notes_column_2_category %}{{ note.note }}{% endif %}{% endfor %}</td>
+							<td class="special-note">{% for note in item.notes %}{% if note.category_name == notes_column_3_category %}{{ note.note }}{% endif %}{% endfor %}</td>
+						</tr>
+				{% endcase %}
+				{% endfor %}
+				<!-- SERVICE TIMES -->
+				{% if print_other_times == true %}
+				<table class="times">
+					<thead>
+						<tr>
+							<th colspan="4">OTHER TIMES</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% assign even = 0 %}
+						<tr>
+							{% for time in plan.other_times %}
+								{{ time.starts_at | date: '%A' | assign_to: 'day_of_week' }}
+								{% if day_of_week == 'Sunday' %}
+									<th>{{ time.starts_at | date: '%I:%M%P' }}</th>
+									<td>{{ time.name }}</td>
+									{% if even == 1 %}
+										</tr><tr>
+										{% assign even = 0 %}
+									{% else %}
+										{% assign even = 1 %}
+									{% endif %}
+								{% else %}
+									<th>{{ time.starts_at | date: '%b %d %I:%M%P' }}</th>
+									<td>{{ time.name }}</td>
+									{% if even == 1 %}
+										</tr><tr>
+										{% assign even = 0 %}
+									{% else %}
+										{% assign even = 1 %}
+									{% endif %}
+								{% endif %}
+							{% endfor %}
+						</tr>
+					</tbody>
+				</table>
+				{% endif %}
+				{% if print_rehearsal_times == true %}
+				<table class="times">
+					<thead>
+						<tr>
+							<th colspan="4">REHEARSAL TIMES</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% assign even = 0 %}
+						<tr>
+							{% for time in plan.rehearsal_times %}
+								{{ time.starts_at | date: '%A' | assign_to: 'day_of_week' }}
+								{% if day_of_week == 'Sunday' %}
+									<th>{{ time.starts_at | date: '%I:%M%P' }}</th>
+									<td>{{ time.name }}</td>
+									{% if even == 1 %}
+										</tr><tr>
+										{% assign even = 0 %}
+									{% else %}
+										{% assign even = 1 %}
+									{% endif %}
+								{% else %}
+									<th>{{ time.starts_at | date: '%b %d %I:%M%P' }}</th>
+									<td>{{ time.name }}</td>
+									{% if even == 1 %}
+										</tr><tr>
+										{% assign even = 0 %}
+									{% else %}
+										{% assign even = 1 %}
+									{% endif %}
+								{% endif %}
+							{% endfor %}
+						</tr>
+					</tbody>
+				</table>
+				{% endif %}
+				<!-- END SERVICE TIMES -->
+				</table>
+		</td>
+		</tr>
+	</table>
+
+{% if force_page_break == true %}<div style="page-break-before: always;"></div>{% endif %}
+
+	<!-- TIMES & PEOPLE TABLE -->
+	<table>
+		<tr>
+			{% if print_plan_people == true %}
+
+				{% if all_categories == true %}
+					<td class="people_section">
+						{% for plan_person in plan.plan_people_not_declined %}
+
+							{% if last_category != plan_person.category.id%}
+								{% if current_position != '' %}</div>{% endif %}
+								<div class="people_category">
+									{{ plan_person.category.name }}
+								</div>
+								{% assign current_position = '' %}
+							{% endif %}
+
+							{% assign last_category = plan_person.category.id %}
+
+							{% if current_position != plan_person.position %}
+								{% if current_position != '' %}</div>{% endif %}
+								<div class="position">
+									<div class="person">{{ plan_person.position }}</div>
+							{% endif %}
+
+							<div>{{ plan_person.person.name }}{% if plan_person.status == 'U' %}&nbsp;<span class="icon-question">?</span>{% endif %}</div>
+
+							{% assign current_position = plan_person.position %}
+						{% endfor %}
+								</div>
+					</td>
+				{% else %}
+					<td class="people_section">
+
+						{% for category in my_categories %}
+
+							<div class="people_category">
+								{{ category }}
+							</div>
+
+							{% for plan_person in plan.plan_people_not_declined %}
+								{% if plan_person.category.name == category %}
+									{% if current_position != plan_person.position %}
+										{% if current_position != '' %}</div>{% endif %}
+										<div class="person">
+											<div class="position">{{ plan_person.position }}</div>
+									{% endif %}
+
+										<div>{{ plan_person.person.first_name }} {{ plan_person.person.last_name }}{% if plan_person.status == 'U' %}&nbsp;<span class="icon-question">?</span>{% endif %}</div>
+
+									{% assign current_position = plan_person.position %}
+								{% endif %}
+							{% endfor %}
+										</div>
+						{% endfor %}
+					</td>
+				{% endif %}
+
+			{% endif %}
+		</tr>
+	</table>
+	<!-- END TIMES & PEOPLE TABLE -->
+
+    {% endif %}
+  {% endfor %}
+{% endfor %}
+</body>
+</html>
