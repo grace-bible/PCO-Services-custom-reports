@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+
+<!--
+QUICK CUSTOMIZATION:
+
+TO FORCE A PAGE BREAK AFTER EACH TIME, SET THIS TO TRUE
+{% assign force_page_break = true %}
+
+TO ONLY PRINT SPECIFIC TEAMS SET THIS TO false
+{% assign all_categories = false %}
+
+SET INDIVIDUAL TEAMS OF PEOPLE TO PRINT (and set above to false)
+{% array my_categories = "Leadership", "Choir", "Band", "Hospitality", "Media", "Production" %}
+
+INTERNAL CODE
+    MULTI-DAY?
+    {% for time in plan.plan_times %}
+        {% assign current_day = time.starts_at | date: "%a" %}
+        {% if last_day and current_day != last_day %}
+            {% assign multi_day = true %}
+        {% endif %}
+        {% assign last_day = current_day %}
+    {% endfor %}
+-->
+
+<html>
+	<head>
+		<title>{{ plan.ministry.name }}:: {{ plan.dates }}</title>
+		<style>
+			* { font-family: Verdana, Arial; font-size: 10pt; }
+			body { padding:0; margin:0; }
+
+
+			table#header { width: 100%; border: none; padding: 0; border-collapse: collapse;}
+			table#header td { padding: 2px; vertical-align: top; }
+
+			H1 { text-align: center; padding: 0; margin: 0; font-size: 28pt; }
+			H2 { text-align: center; padding: 0; margin: 0; font-size: 18pt; }
+			H3 { text-align: center; padding: 0; margin: 0; font-size: 12pt; font-style: italic; }
+			H4 { text-align: center; padding: 0; margin: 0; font-size: 10pt }
+			PRE { margin: 0; padding: 0; white-space: pre-wrap; }
+
+			.ministry_title { font-size: 12pt; }
+			.plan_dates { font-weight: bold; font-size: 14pt; }
+
+			.people_category { clear: both; border-bottom: solid 1px lightgrey; padding-top: 10px; font-weight: bold; font-size: 12pt; }
+			.time_heading { clear: both; padding-top: 20px; font-weight: bold; font-size: 16pt; }
+			.time { clear: both; padding-bottom: 20px; }
+			.position {
+				width: 170px;
+				display: inline-block;
+				vertical-align: top;
+				margin-bottom: 5px;
+				font-size: 9pt;
+
+
+				/* For IE 7 */
+				zoom: 1;
+				*display: inline;
+			}
+
+          .icon-question{
+            display: inline-block;
+            color: #fff;
+            text-align: center;
+            font-size: 1em;
+            background: #666;
+            border-radius: 50%;
+            width: 1em;
+            height: 1em;
+            line-height: 1em;
+			padding: .1em; }
+
+			.person { font-size: 9pt; font-weight: bold; }
+
+
+	        .column_break {column-break-after: always;}
+
+		</style>
+	</head>
+	<body>
+
+{% for time in plan.other_times %}
+    {% if time.name != '' %}
+      {% if multi_day %}
+        {% assign time_formatted = time.name %}
+        {% assign time_split_team = time.starts_at | date: "%a %-I:%M %p" | replace: " AM","a" | replace: " PM","p" %}
+      {% else %}
+      	{% assign time_formatted = time.name %}
+        {% assign time_split_team = time.starts_at | date: "%-I:%M %p" | replace: " AM","a" | replace: " PM","p" %}
+      	{% assign time_starts_at = time.starts_at | date: "%a %I:%M %p" %}
+      {% endif %}
+    {% else %}
+        {% if multi_day %}
+            {% assign time_formatted = time.starts_at | date: "%a %-I:%M %p" | replace: " AM","a" | replace: " PM","p" %}
+            {% assign time_split_team = time.starts_at | date: "%a %-I:%M %p" | replace: " AM","a" | replace: " PM","p" %}
+        {% else %}
+            {% assign time_formatted = time.starts_at | date: "%-I:%M %p" | replace: " AM","a" | replace: " PM","p" %}
+            {% assign time_split_team = time.starts_at | date: "%-I:%M %p" | replace: " AM","a" | replace: " PM","p" %}
+        {% endif %}
+    {% endif %}
+
+
+    {% if forloop.first == true or force_page_break %}
+        <div class="plan_dates">{{ plan.dates }} People</div>
+        <div class="ministry_title">{{ plan.ministry.name }}</div>
+    {% endif %}
+
+    {% assign current_position = "" %}
+    {% assign last_category = "" %}
+
+	<div class="time">
+	<div class="time_heading">
+	   {{ time_formatted }}{% if time.name == '' %}{% endif %}
+	</div>
+    <div class="timeclock">
+      {{ time_starts_at }}
+    </div>
+
+    {% for plan_person in plan.plan_people_not_declined %}
+        {% assign print_me = false %}
+        {% assign team_split = plan_person.category.name | split: " - " %}
+        {% unless all_categories == true %} <!-- This is how we use the Team Settings at the top of the report -->
+            {% for category in my_categories %}
+                {% if category contains team_split.first %}
+                    {% assign print_me = true %}
+                {% endif %}
+            {% endfor %}
+        {% endunless %}
+
+
+        {% if all_categories == true or print_me == true %}
+            {% if last_category != plan_person.category.id and team_split.last == time_split_team or team_split.first == team_split.last or team_split.last == time_formatted %}<!-- if it's a new team and not a split team from a different time -->
+                {% if current_position != '' %}
+                    </div>  <!-- end position div before starting a new team -->
+                {% endif %}
+
+                <div class="people_category">
+                    {{ team_split.first }}
+                </div>
+
+                {% assign current_position = '' %}
+            {% endif %}
+
+            {% assign last_category = plan_person.category.id %}
+
+            {% if current_position != plan_person.position and team_split.last == time_split_team or team_split.first == team_split.last or team_split.last == time_formatted %}
+                {% if current_position != '' %}
+            	   </div>  <!-- end position div before starting a new position -->
+            	{% endif %}
+
+                <div class="position">  <!-- start a position div -->
+            	<div class="person">
+            	   {{ plan_person.position }}
+            	</div>
+            {% endif %}
+
+            {% if team_split.last == time_split_team or team_split.first == team_split.last or team_split.last == time_formatted %}
+                <div>
+            	   {{ plan_person.person.name }}{% if plan_person.status == 'U' %}&nbsp;<span class="icon-question"\>?</span>{% endif %}
+            	</div>
+                    {% assign current_position = plan_person.position %}
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+
+			</div>
+
+    		{% if force_page_break == true and forloop.last == false %}
+    			<div style="page-break-before: always;"></div>
+    		{% endif %}
+    					    			        	</div> <!-- end last position div -->
+
+{% endfor %}
+
+	</body>
+</html>
