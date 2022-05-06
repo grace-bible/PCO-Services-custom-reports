@@ -110,8 +110,8 @@ PRINT ITEM TIMES
         </style>
 	</head>
 <body>
-	{% for category in categories_to_print %}						
-	{% for plan_person in plan.plan_people_not_declined %}					
+	{% for category in categories_to_print %}
+	{% for plan_person in plan.plan_people_not_declined %}
 		{% if (plan_person.category.name == category) or (plan_person.position == position_to_print)%}
 	<!-- Print specific items for this position -->
 		<div style="page-break-before: always;"></div>
@@ -242,7 +242,7 @@ PRINT ITEM TIMES
 		  {% if note.category_name contains plannotes_name %}
 			{% if note.category_name contains "Checklist" %}
 			{% else %}
-			  {% if note.note != "" %} 
+			  {% if note.note != "" %}
 				<span id="position-plan-notes" style="font-size:.8em;"><strong>{{ note.category_name}}</strong>: {{ note.note }}<br/><br/></span>
 			  {% endif %}
 			{% endif %}
@@ -281,7 +281,7 @@ PRINT ITEM TIMES
 								{% for time in plan_person.service_times %}
 									{% for item_time in item.times %}
 										{% if item_time.time_id == time.id %}
-											<span style="background-color:eeeeee;font-size:.8em;">{{ item_time.actual_time | date: '%I:%M%p' | downcase }}<br/></span>                                                                                          
+											<span style="background-color:eeeeee;font-size:.8em;">{{ item_time.actual_time | date: '%I:%M%p' | downcase }}<br/></span>
 										{% endif %}
 									{% endfor %}
 								{% endfor %}
