@@ -1,0 +1,74 @@
+<!--
+QUICK CUSTOMIZATION:
+
+{% assign number_of_columns = 1 %}
+{% assign space_between_columns = "40px" %}
+
+{% assign print_ccli_number = true %}
+{% assign print_author = true %}
+{% assign print_copyright = true %}
+{% assign print_lyrics = true %}
+
+-->
+
+<html>
+<head>
+    <title>Song Details:: {{ plan.ministry.name }}:: {{ plan.dates }}</title>
+	<style>
+
+	* { font-family: monospace; font-size: 13pt; }
+    body { padding:0; margin:10px; }
+
+	.chord_chart_content {
+		margin-top: 25px;
+		-moz-column-count: {{ number_of_columns }};
+		-moz-column-gap: {{ space_between_columns }};
+		-webkit-column-count: {{ number_of_columns }};
+		-webkit-column-gap: {{ space_between_columns }};
+		column-count: {{ number_of_columns }};
+		column-gap: {{ space_between_columns }};
+		column-fill: auto;
+	}
+
+	.column_break{ column-break-after: always;}
+
+	#header { width: 100%; }
+
+	.ministry_name { font-size: 18pt; font-weight: bold; text-align: center; }
+	.dates { font-size: 15pt; text-align: center;}
+	.plan_title { font-size: 15pt; text-align: center; }
+
+        .song_header { margin-top: 20px; page-break-before: always; }
+	.song_title { font-weight: bold; font-size: 16pt; }
+        .credits, .copyright { font-size: 11pt; font-style: italic; }
+      	.sequence { font-size: 11pt; font-weight: bold; }
+	.lyrics { margin-top: 15px; }
+
+	</style>
+</head>
+<body>
+	<div id="header">
+		<div class="ministry_name">{{ plan.ministry.name }}</div>
+		<div class="dates">{{ plan.dates }}</div>
+		<div class="plan_title">{{ plan.plan_title }}</div>
+	</div>
+	<div class="chord_chart_content">
+		{% for item in plan.items %}
+                    {% if item.item_type == 'Song' %}
+                        <div class="song">
+                          <div class="song_header">
+                            <div class="song_title">{{item.song.title}}</div>
+                            <div class="credits">{% if print_ccli_number and item.song.ccli_id != nil %}#{{item.song.ccli_id}} {% endif %}{% if print_author and item.song.author != '' %}by {{item.song.author}}{% endif %}</div>
+                            <div class="copyright">{% if print_copyright %}{{item.song.copyright}}{% endif %}</div>
+                            <div class="sequence">{{item.item_sequence}}</div>
+                          </div>
+
+                          {% if print_lyrics %}
+                            <div class="lyrics">{{item.arrangement.lyrics}}</div>
+                          {% endif %}
+                        </div>
+                    {% endif %}
+		{% endfor %}
+	</div>
+</body>
+</html>
