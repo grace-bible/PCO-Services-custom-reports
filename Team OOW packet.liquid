@@ -287,7 +287,7 @@ PRINT ITEM TIMES
 										{% endfor %}
 									{% endfor %}
 								{% else %}
-									<span style="background-color:eeeeee;font-size:.8em;">
+									<span style="background-color:eeeeee;font-size:.8em;font-weight:bold;">
 										{% if item.length != "0:00" %}
 											{{ item.length }} {% if item.is_preservice %}before{% endif %}{% if item.is_postservice %}after{% endif %}
 										{% endif %}
@@ -303,7 +303,7 @@ PRINT ITEM TIMES
 										{% endfor %}
 									{% endfor %}
 								{% else %}
-									<span style="background-color:eeeeee;font-size:.8em;">
+									<span style="background-color:eeeeee;font-size:.8em;font-weight:bold;">
 										{% if item.length != "0:00" %}
 											{{ item.length }}
 										{% endif %}
