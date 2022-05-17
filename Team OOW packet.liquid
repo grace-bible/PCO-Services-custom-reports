@@ -1,8 +1,7 @@
-<!doctype html>
-
+<!DOCTYPE html>
 <!-- CUSTOMIZATION:
 CATEGORY NAME OF NOTES TO PRINT FOR COLUMN 1
-{% assign notes_column_1_category =  %}
+{% assign notes_column_1_category = "Lights" %}
 
 CATEGORY NAME OF NOTES TO PRINT FOR COLUMN 2
 {% assign notes_column_2_category =  %}
@@ -15,7 +14,7 @@ SPECIAL ITEM STYLING
 
 SPECIFIC POSITIONS
 {% assign audio_A1 = "Audio FOH" %}
-{% assign audio_A2 = "Audio Monitors" %}
+{% assign audio_A2 = "Audio Tech (A2)" %}
 
 PRINT ITEM DESCRIPTIONS?
 {% assign print_item_description = true %}
@@ -37,80 +36,80 @@ PLAN PEOPLE OPTIONS
 	{% assign all_categories = false %}
 
 	SET INDIVIDUAL CATEGORY NAMES OF PEOPLE TO PRINT (and set above to false)
-	{% array my_categories = "Leadership", "Band", "Production", "Media", "Hospitality" %}
+	{% array my_categories = "Leadership", "Band", "Production" %}
 
 TEAMS OF PEOPLE TO PRINT REPORTS FOR
-{% array categories_to_print = "Production", "Band" %}
+{% array categories_to_print = "Leadership", "Band", "Production" %}
 
 POSITION TO PRINT (if you have one specific position outside of a TEAM you'd also like to print)
-{% assign position_to_print = "Creative Director" %}
+{% assign position_to_print =  %}
 
 NOTES TO PRINT WITH PLAN (any note fields you'd like to print with the whole plan)
-{% array notes_categories = "Our Win", "General", "Quick Edit slides" %}
+{% array notes_categories = "Our Win", "Dress Code", "General", "Quick Edit slides" %}
 
 PRINT ITEM TIMES
-{% assign print_plan_item_times = true %}
+{% assign print_plan_item_times = false %}
 -->
 
 <html>
-<head>
-	<title>{{ plan.ministry.name }}:: {{ plan.dates }}</title>
-	<style>
-		* { font-family: Verdana, Arial; padding:0; margin:0; font-size: 8pt; }
-	.item { padding: 5px; }
-	#plan thead { display: table-header-group; border: solid 4px black; }
-	#plan { border-collapse: collapse; border: solid 4px black; width: 100%; }
-	#plan th { background-color: black; color: white; text-align: right; }
-	.header { background-color: black; color: white; }
-	#header { width: 100%; }
-	.times { width: 100%; border: solid 2px #999; }
-	.times thead th { background-color: #eee; }
-	.times tbody th { width: 10%; }
-	.times tbody td { width: 40%; }
+	<head>
+		<title>{{ plan.ministry.name }}:: {{ plan.dates }}</title>
+		<style>
+			* { font-family: Verdana, Arial; padding:0; margin:0; font-size: 8pt; }
+		.item { padding: 5px; }
+		#plan thead { display: table-header-group; border: solid 4px black; }
+		#plan { border-collapse: collapse; border: solid 4px black; width: 100%; }
+		#plan th { background-color: black; color: white; text-align: right; }
+		.header { background-color: black; color: white; }
+		#header { width: 100%; }
+		.times { width: 100%; border: solid 2px #999; }
+		.times thead th { background-color: #eee; }
+		.times tbody th { width: 10%; }
+		.times tbody td { width: 40%; }
 
-	.evenpreservice { background-color: #999999; color: #000000; font-style: italic; }
-	.oddpreservice { background-color: #999999; color: #000000; font-style: italic; }
-	.even { background-color: #ffffff; color: #000000; }
-	.odd { background-color: #cccccc; color: #000000; }
-	{{item_styles}}
-	.checkbox { text-align:center; color: #cccccc; height: 1.1em; width: 1.1em; border: 1px solid #000; background-color: #fff; float:left; margin-right:3px; }
-	.specific-note { font-size: 1em; color: #000000; font-style: normal; background:#ffcc00; }
-	.team-note { font-size: 1em; color: #000000; font-style: italic; background:#ffbb00; }
-	.special-note { font-size: .8em ; color: #000000; font-style: normal; font-weight: bold; padding: 1px; text-align: right; }
-	.todo-column { font-size: 1em; }
-	.sequence { font-family: monospace; font-size:1em; color:#0025FF; } /* Grey #444 */
+		.evenpreservice { background-color: #999999; color: #000000; font-style: italic; }
+		.oddpreservice { background-color: #999999; color: #000000; font-style: italic; }
+		.even { background-color: #ffffff; color: #000000; }
+		.odd { background-color: #cccccc; color: #000000; }
+		{{item_styles}}
+		.checkbox { text-align:center; color: #cccccc; height: 1.1em; width: 1.1em; border: 1px solid #000; background-color: #fff; float:left; margin-right:3px; }
+		.specific-note { font-size: 1em; color: #000000; font-style: normal; background:#ffcc00; }
+		.team-note { font-size: 1em; color: #000000; font-style: italic; background:#ffbb00; }
+		.special-note { font-size: .8em ; color: #000000; font-style: normal; font-weight: bold; padding: 1px; text-align: right; }
+		.todo-column { font-size: 1em; }
+		.sequence { font-family: monospace; font-size:1em; color:#0025FF; font-weight:bold; } /* Grey #444 */
 
-	.times_section { padding: 10px; width: 200px; border-right: dotted 2px black; vertical-align: top; }
-	.time_heading { clear: both; border-bottom: solid 1px lightgrey; padding-top: 10px; font-weight: bold; font-size: 12pt; }
-	table#plan .time { width: 70px; text-align: center; }
+		.times_section { padding: 10px; width: 200px; border-right: dotted 2px black; vertical-align: top; }
+		.time_heading { clear: both; border-bottom: solid 1px lightgrey; padding-top: 10px; font-weight: bold; font-size: 12pt; }
+		table#plan .time { width: 70px; text-align: center; }
 
-	.people_section { padding: 10px; vertical-align: top; }
-		.people_category { clear: both; border-bottom: solid 1px lightgrey; font-weight: bold; }
-		.position { font-weight: bold; margin-bottom: 2px; }
-		.person { font-size: 9pt;
-			width: 170px;
-			display: inline-block;
-			vertical-align: top;
-			margin-bottom: 10px;
+		.people_section { padding: 10px; vertical-align: top; }
+			.people_category { clear: both; border-bottom: solid 1px lightgrey; font-weight: bold; }
+			.position { font-weight: bold; margin-bottom: 2px; }
+			.person { font-size: 9pt;
+				width: 170px;
+				display: inline-block;
+				vertical-align: top;
+				margin-bottom: 10px;
 
-			/* For IE 7 */
-			zoom: 1;
-			*display: inline;}
+				/* For IE 7 */
+				zoom: 1;
+				*display: inline;}
 
-		.icon-question{
-			display: inline-block;
-			color: #fff;
-			text-align: center;
-			font-size: 1em;
-			background: #666;
-			border-radius: 50%;
-			width: 1em;
-			height: 1em;
-			line-height: 1em;
-			padding: .1em;
-		}
-	</style>
-</head>
+			.icon-question{
+				display: inline-block;
+				color: #fff;
+				text-align: center;
+				font-size: 1em;
+				background: #666;
+				border-radius: 50%;
+				width: 1em;
+				height: 1em;
+				line-height: 1em;
+				padding: .1em;
+			}
+        </style>
+	</head>
 <body>
 	{% for category in categories_to_print %}
 	{% for plan_person in plan.plan_people_not_declined %}
@@ -132,7 +131,7 @@ PRINT ITEM TIMES
 		<tr>
 		<td class="todo-column" style="width: 150pt; border: solid 1px black; vertical-align: top; padding: 5px; padding-top: 0px; ">
 		  <!-- TIMES -->
-		 {% for time in plan.plan_times %}<span id="times"><strong>{{ time.starts_at | date: '%I:%M%p' }}</strong>&nbsp;&nbsp;{{ time.name }}<br/></span>{% endfor %}<br/>
+		 {% for time in plan.plan_times %}<span id="times"><strong>{{ time.starts_at | date: '%I:%M' }}</strong>&nbsp;&nbsp;{{ time.name }}<br/></span>{% endfor %}<br/>
 		  <!-- END TIMES -->
 	 <!-- CHECKLIST -->
 	  {% capture checklist_name %}Checklist - {{ plan_person.category.name }} - {{ plan_person.position }}{% endcapture %}
@@ -278,29 +277,39 @@ PRINT ITEM TIMES
 						{% endif %}
 						<tr class="{% cycle 'even', 'odd' %}{% if item.is_preservice or item.is_postservice %}preservice{% endif %}">
 							<td class="item">
-						   {% if item.is_preservice or item.is_postservice %}
-							  {% if print_plan_item_times == true %}
-								{% for time in plan_person.service_times %}
-									{% for item_time in item.times %}
-										{% if item_time.time_id == time.id %}
-											<span style="background-color:eeeeee;font-size:.8em;">{{ item_time.actual_time | date: '%I:%M%p' | downcase }}<br/></span>
-										{% endif %}
+							{% if item.is_preservice or item.is_postservice %}
+								{% if print_plan_item_times == true %}
+									{% for time in plan_person.service_times %}
+										{% for item_time in item.times %}
+											{% if item_time.time_id == time.id %}
+												<span style="background-color:eeeeee;font-size:.8em;font-weight:bold;">{{ item_time.actual_time | date: '%I:%M%p' | downcase }}<br/></span>
+											{% endif %}
+										{% endfor %}
 									{% endfor %}
-								{% endfor %}
-							  {% else %}
-								<span style="background-color:eeeeee;font-size:.8em;">
-								  {% if item.length != "0:00" %}
-										{{ item.length }} {% if item.is_preservice %}before{% endif %}{% if item.is_postservice %}after{% endif %}
-									{% endif %}
-								</span>
-							  {% endif %}
-						   {% else %}
-								 <span style="background-color:eeeeee;font-size:.8em;font-weight:bold;">
-									{% if item.length != "0:00" %}
-										{{ item.length }}
-									{% endif %}
-								 </span>
-						   {% endif %}
+								{% else %}
+									<span style="background-color:eeeeee;font-size:.8em;">
+										{% if item.length != "0:00" %}
+											{{ item.length }} {% if item.is_preservice %}before{% endif %}{% if item.is_postservice %}after{% endif %}
+										{% endif %}
+									</span>
+								{% endif %}
+							{% else %}
+								{% if print_plan_item_times == true %}
+									{% for time in plan_person.service_times %}
+										{% for item_time in item.times %}
+											{% if item_time.time_id == time.id %}
+												<span style="background-color:eeeeee;font-size:.8em;font-weight:bold;">{{ item_time.actual_time | date: '%I:%M%p' | downcase }}<br/></span>
+											{% endif %}
+										{% endfor %}
+									{% endfor %}
+								{% else %}
+									<span style="background-color:eeeeee;font-size:.8em;">
+										{% if item.length != "0:00" %}
+											{{ item.length }}
+										{% endif %}
+									</span>
+								{% endif %}
+							{% endif %}
 							</td>
 							<td class="item{% if (item.item_type == "Song") %} song{% endif %}{% if (item.item_type == "Media") %} media{% endif %}">
 								{% if current_header_printed == 0 %}
@@ -315,6 +324,7 @@ PRINT ITEM TIMES
 								{% if (note.category_name == plan_person.position) %}<span class="specific-note">{{ note.note }}</span><br/>{% endif %}
 								{% if (note.category_name == plan_person.category.name) %}<span class="team-note">{{ note.note }}</span><br/>{% endif %}
 								{% if (note.category_name == "Ableton") and (plan_person.position == audio_A1 or plan_person.position == audio_A2 or plan_person.category.name == "Band") %}<span class="team-note">{{ note.note }}</span><br/>{% endif %}
+                              	{% if (note.category_name == "Speaker") and (plan_person.position == "Interpreter" or plan_person.position == "Elder") %}<span class="team-note">{{ note.note }}</span><br/>{% endif %}
 							  {% endfor %}
 							  {% if (item.item_type == "Song") and (plan_person.category.name == "Band" or plan_person.category.name == "Production") %}
 								<span class="sequence">{{ item.item_sequence }}</span>
