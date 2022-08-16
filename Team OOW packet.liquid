@@ -297,7 +297,7 @@ PRINT ITEM TIMES
 								{% if print_plan_item_times == true %}
 									{% for time in plan_person.service_times %}
 										{% for item_time in item.times %}
-											{% if item_time.time_id == time.id %}
+											{% if item_time.time_id == time.id and item_time.excluded? == false %}
 												<span style="background-color:eeeeee;font-size:.8em;font-weight:bold;">{{ item_time.actual_time | date: '%I:%M%p' | downcase }}<br/></span>
 											{% endif %}
 										{% endfor %}
