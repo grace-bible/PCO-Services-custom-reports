@@ -10,11 +10,14 @@ CATEGORY NAME OF NOTES TO PRINT FOR COLUMN 3
 {% assign notes_column_3_category =  %}
 
 SPECIAL ITEM STYLING
-{% assign item_styles = ".item.song { background-color: /*rgb(255, 237, 209)*/; }" %}
+{% assign item_styles = "/* #plan-notes { background: ; }  .song { background-color: #ffedd1; color: #000000; }  .odd.song { background-color: #ffedd1; color: #000000; } .media { background-color: #e6e2fd; color: #000000; } */" %}
+
+{% comment %} red #ffe0e8 ; green #e8f6df ; yellow #ffedd1 ; purple #e6e2fd {% endcomment %}
 
 SPECIFIC POSITIONS
-{% assign audio_A1 = "Audio FOH" %}
-{% assign audio_A2 = "Audio Tech (A2)" %}
+{% assign audio_A1 = "A1 Audio FOH" %}
+{% assign audio_A2 = "A2 Audio Monitors" %}
+{% assign audio_A3 = "A3 Audio Broadcast" %}
 
 PRINT ITEM DESCRIPTIONS?
 {% assign print_item_description = true %}
@@ -36,19 +39,19 @@ PLAN PEOPLE OPTIONS
 	{% assign all_categories = false %}
 
 	SET INDIVIDUAL CATEGORY NAMES OF PEOPLE TO PRINT (and set above to false)
-	{% array my_categories = "Leadership", "Band", "Production" %}
+	{% array my_categories = "Band", "Leadership", "Production", "Production (tags)" %}
 
 TEAMS OF PEOPLE TO PRINT REPORTS FOR
-{% array categories_to_print = "Leadership", "Band", "Production" %}
+{% array categories_to_print = "Band", "Leadership", "Production", "Production (tags)" %}
 
 POSITION TO PRINT (if you have one specific position outside of a TEAM you'd also like to print)
 {% assign position_to_print =  %}
 
 NOTES TO PRINT WITH PLAN (any note fields you'd like to print with the whole plan)
-{% array notes_categories = "Our Win", "Dress Code", "General", "Quick Edit slides" %}
+{% array notes_categories = "Our Win", "Dress Code", "General" %}
 
 PRINT ITEM TIMES
-{% assign print_plan_item_times = false %}
+{% assign print_plan_item_times = true %}
 -->
 
 <html>
@@ -253,7 +256,7 @@ PRINT ITEM TIMES
 		</td>
 
 		<td valign="top">
-				<table id="plan">
+				<table id="plan" width="100%">
 			  <thead>
 					<tr>
 				<th></th>
@@ -275,13 +278,13 @@ PRINT ITEM TIMES
 							{% assign encountered_duringservice_item = 1 %}
 							<tr><td class="header" colspan="5">START OF SERVICE</td></tr>
 						{% endif %}
-						<tr class="{% cycle 'even', 'odd' %}{% if item.is_preservice or item.is_postservice %}preservice{% endif %}">
+						<tr class="{% cycle 'even', 'odd' %}{% if item.is_preservice or item.is_postservice %}preservice{% endif %}{% if item.item_type == "Song" %} song{% endif %}">
 							<td class="item">
 							{% if item.is_preservice or item.is_postservice %}
 								{% if print_plan_item_times == true %}
 									{% for time in plan_person.service_times %}
 										{% for item_time in item.times %}
-											{% if item_time.time_id == time.id %}
+											{% if item_time.time_id == time.id and item_time.excluded? == false %}
 												<span style="background-color:eeeeee;font-size:.8em;font-weight:bold;">{{ item_time.actual_time | date: '%I:%M%p' | downcase }}<br/></span>
 											{% endif %}
 										{% endfor %}
@@ -317,16 +320,17 @@ PRINT ITEM TIMES
 								{% assign current_header_printed = 1 %}
 								{% endif %}
 								<strong>{{ item.title }}</strong><br/>
-								{% if (item.description != "") and (print_item_description == true) %}
-								<span style="font-size:1em;">{{ item.description }}</span><br/>
+								{% if (item.description != "") and (print_item_description == true or plan_person.position == ("Producer" or "Producer's Assistant")) %}
+								<span style="font-size:0.8em;font-style:italic;color:#555555;">{{ item.description }}</span><br/>
 								{% endif %}
 							  {% for note in item.notes %}
 								{% if (note.category_name == plan_person.position) %}<span class="specific-note">{{ note.note }}</span><br/>{% endif %}
 								{% if (note.category_name == plan_person.category.name) %}<span class="team-note">{{ note.note }}</span><br/>{% endif %}
-								{% if (note.category_name == "Ableton") and (plan_person.position == audio_A1 or plan_person.position == audio_A2 or plan_person.category.name == "Band") %}<span class="team-note">{{ note.note }}</span><br/>{% endif %}
+								{% if (note.category_name == audio_A1) and (plan_person.position == audio_A2 or plan_person.position == audio_A3) %}<span class="team-note">{{ note.note }}</span><br/>{% endif %}
+								{% if (note.category_name == "Tracks") and (plan_person.position == audio_A1 or plan_person.position == audio_A2 or plan_person.position == audio_A3 or plan_person.category.name == "Band") %}<span class="team-note">{{ note.note }}</span><br/>{% endif %}
                               	{% if (note.category_name == "Speaker") and (plan_person.position == "Interpreter" or plan_person.position == "Elder") %}<span class="team-note">{{ note.note }}</span><br/>{% endif %}
 							  {% endfor %}
-							  {% if (item.item_type == "Song") and (plan_person.category.name == "Band" or plan_person.category.name == "Production") %}
+							  {% if (item.item_type == "Song") and (plan_person.category.name == "Band" or plan_person.category.name == "Production" or plan_person.position == "Producer") %}
 								<span class="sequence">{{ item.item_sequence }}</span>
 							  {% endif %}
 							</td>
