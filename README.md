@@ -43,7 +43,7 @@ Here is a list of variables you can define:
 
 ## Inspiration
 
-Enclosed templates were largely inspired by the iterative `forloop` [from this repo](https://github.com/josephdadams/PlanningCenterServicesReports) that generates a singly printable packet for the entire team at once.
+Enclosed templates were largely inspired by the iterative `forloop` [from this repository](https://github.com/josephdadams/PlanningCenterServicesReports) that generates a singly printable packet for the entire team at once.
 
 The need for these report templates was driven toward more granular flexibility by the need to operate with a large-scale volunteer team of nearly 70 volunteers and staff for an anniversary gathering of our multisite campuses.
 
